@@ -42,12 +42,20 @@
   var hls = null;
   var HLS_SUPPORTED = typeof Hls !== 'undefined' && Hls.isSupported();
 
+  // ── scrub source: loaded lazily on first hover/scrub so fetching the tiny
+  //    preview clip never competes with the real stream for bandwidth ──
+  var PREVIEW_LOADED = false;
+  function ensurePreview() {
+    if (PREVIEW_LOADED || !previewVideo) return;
+    PREVIEW_LOADED = true;
+    if (PREVIEW_SRC) { previewVideo.setAttribute('src', PREVIEW_SRC); previewVideo.load(); }
+  }
+
   var state = {
     controlsVisible: true, hideTimer: null,
     scrubbing: false, dragging: false, wasPaused: true,
     muted: false, volume: 1,
-    retries: 0, MAX_RETRIES: 2,
-    introMode: false, introTimer: null
+    retries: 0, MAX_RETRIES: 2
   };
 
   function fmt(sec) {
@@ -65,43 +73,28 @@
   //    Desktop: fixed 16:10 stage, everything object-fit:contain — fully
   //    normalized, no stretch, no crop.
   //    Mobile (no fullscreen / no rotate needed — autoplays silent):
-  //      • landscape fills a 16:11 stage (mild "not too slim" fill so the
-  //        video reads big instead of a thin sliver);
-  //      • portrait matches its own native ratio so it scales as large as the
-  //        screen allows, still object-fit:contain (bigger, never cropped).
-  //    Both are capped to ~90% of the viewport height so nothing overflows.
+  //      • stage matches the video's own aspect ratio so the picture fills
+  //        as much of the screen as possible with object-fit:contain —
+  //        never stretched, never cropped, never a distorted sliver;
+  //      • soft-cap of 3:1 so super-wide inputs still stay on-screen;
+  //      • capped to ~90% of the viewport height so nothing overflows.
   function fitStage() {
     if (video.videoWidth > 0 && video.videoHeight > 0) {
-      var landscape = video.videoWidth > video.videoHeight;
       var fs = !!document.fullscreenElement;
-      var stretchPoster = false;
+      video.style.objectFit = 'contain';
+      root.classList.remove('wps-stretch');
+      root.classList.toggle('wps-portrait', video.videoWidth <= video.videoHeight);
       if (fs) {
         root.style.aspectRatio = '';
-        video.style.objectFit = 'contain';
-        root.classList.remove('wps-stretch');
-        root.classList.add('wps-portrait');
       } else if (window.innerWidth <= 768) {
         var availW = root.clientWidth || window.innerWidth;
+        var native = video.videoWidth / video.videoHeight;
         var need = availW / (window.innerHeight * 0.9);
-        var ratio;
-        if (landscape) {
-          ratio = Math.max(16 / 11, need);
-          video.style.objectFit = 'fill';
-          stretchPoster = true;
-        } else {
-          ratio = Math.max(video.videoWidth / video.videoHeight, need);
-          video.style.objectFit = 'contain';
-        }
-        root.style.aspectRatio = Math.min(ratio, 3).toFixed(4);
-        root.classList.toggle('wps-stretch', landscape);
-        root.classList.toggle('wps-portrait', !landscape);
+        root.style.aspectRatio = Math.min(Math.max(native, need), 3).toFixed(4);
       } else {
         root.style.aspectRatio = '16 / 10';
-        video.style.objectFit = 'contain';
-        root.classList.toggle('wps-stretch', landscape);
-        root.classList.toggle('wps-portrait', !landscape);
       }
-      if (posterEl) posterEl.style.backgroundSize = stretchPoster ? '100% 100%' : 'contain';
+      if (posterEl) posterEl.style.backgroundSize = 'contain';
     }
   }
 
@@ -127,11 +120,6 @@
       video.load();
       if (autoplay) { var p2 = video.play(); if (p2 && p2.catch) p2.catch(function () {}); }
     }
-    // scrub source: prefer the tiny downloaded clip (never double-fetch hotlink)
-    if (previewVideo) {
-      previewVideo.removeAttribute('src');
-      if (PREVIEW_SRC) { previewVideo.setAttribute('src', PREVIEW_SRC); previewVideo.load(); }
-    }
     if (previewImg && POSTER) previewImg.style.backgroundImage = 'url(' + POSTER + ')';
   }
 
@@ -150,27 +138,10 @@
     }, 700);
   }
 
-  // ── perceived speed: instant-motion intro clip, then real stream ──
-  function introEnd() {
-    if (!state.introMode) return;
-    state.introMode = false;
-    if (state.introTimer) { clearTimeout(state.introTimer); state.introTimer = null; }
-    video.removeAttribute('data-intro');
-    video.removeAttribute('src');
-    video.load();
+  // ── no perceived-speed intro: load the REAL stream immediately so it
+  //    actually starts fast instead of faking motion with a preview clip ──
+  function startPlayback() {
     loadMedia(SRC, true);
-  }
-
-  function introStart() {
-    if (!PREVIEW_SRC || IS_HLS) { loadMedia(SRC, true); return; }
-    state.introMode = true;
-    video.setAttribute('data-intro', '1');
-    video.setAttribute('src', PREVIEW_SRC);
-    video.load();
-    var p = video.play();
-    if (p && p.catch) p.catch(function () {});
-    video.addEventListener('ended', introEnd, { once: true });
-    state.introTimer = setTimeout(introEnd, 7000);
   }
 
   // ── controls visibility ──
@@ -284,11 +255,13 @@
     if (previewBubble && d) previewBubble.classList.add('show');
     if (state.scrubbing) return;
     // light hover: poster or scrub-video frame
+    ensurePreview();
     if (previewVideo && PREVIEW_SRC && previewVideo.readyState >= 1) {
       try { previewVideo.currentTime = ratio * d; } catch (e2) {}
     }
   }
   function startScrub(e) {
+    ensurePreview();
     state.scrubbing = true; state.dragging = true;
     state.wasPaused = video.paused;
     video.pause();
@@ -540,8 +513,8 @@
     // templates mark the <video> autoplay+muted; browsers enforce muted autoplay.
     // If it's blocked, keep it simple: show controls, try once on gesture.
   }
-  // start intro (instant motion via preview clip) then real stream
-  introStart();
+  // start the real stream immediately (autoplay is baked into the <video>)
+  startPlayback();
 
   // kick progress updates even before media loads
   setInterval(updateLoaderPct, 500);

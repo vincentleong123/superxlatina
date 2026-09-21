@@ -54,12 +54,11 @@
          data-preview="<%= videoPreview || video.preview || '' %>"
          data-next="<%= nextVideo ? '/' + nextVideo.id : '' %>"
          data-next-title="<%= nextVideo ? nextVideo.title : '' %>">
-      <video id="wpsVideo" playsinline autoplay muted preload="metadata" poster="<%= videoThumb || video.thumbnail || ('/thumbnails/' + video.id + '.jpg') %>"></video>
+      <video id="wpsVideo" src="<%= playbackUrl || video.video || ('/videos/' + video.id + '.mp4') %>" playsinline autoplay muted preload="auto" poster="<%= videoThumb || video.thumbnail || ('/thumbnails/' + video.id + '.jpg') %>"></video>
       <div class="wps-poster wps-skeleton" style="background-image:url('<%= videoThumb || video.thumbnail || ('/thumbnails/' + video.id + '.jpg') %>')"></div>
       <div class="wps-center"><button class="wps-big-play" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button></div>
       <div class="wps-loader"><div class="wps-loader-ring"></div><span class="wps-loader-pct"></span></div>
-      <video class="wps-preview-video" preload="metadata" muted playsinline></video>
-      <div class="wps-intro-mask" aria-hidden="true"></div>
+      <video class="wps-preview-video" preload="none" muted playsinline></video>
       <div class="wps-controls">
         <div class="wps-progress-wrap">
           <div class="wps-preview-bubble"><div class="wps-preview-img"></div><canvas class="wps-preview-canvas" width="160" height="90"></canvas><span class="wps-preview-time">0:00</span></div>
@@ -576,7 +575,7 @@ function showToast(msg) {
 })();
 </script>
 
-<script src="/js/wps-player.js?v=7"></script>
+<script src="/js/wps-player.js?v=9"></script>
 
 <script>
 // ─── MOBILE NAV ───

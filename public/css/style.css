@@ -618,7 +618,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background: #000;
 }
 /* Base fit before metadata loads; wps-player.js then pins the per-source fit
-   (contain everywhere, except mobile landscape which fills a 16:11 stage). */
+   (object-fit: contain everywhere — desktop 16:10 stage, mobile matches the
+   video's own aspect ratio, capped to ~90vh). */
 
 /* poster */
 .wps-poster {
@@ -630,18 +631,6 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   transition: opacity 0.3s ease;
 }
 .wps-poster.hide { opacity: 0; pointer-events: none; }
-
-/* perceived-speed fade-over mask shown while swapping preview -> real stream */
-.wps-intro-mask {
-  position: absolute;
-  inset: 0;
-  background: #000;
-  z-index: 2;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.28s ease;
-}
-.wps-intro-mask.show { opacity: 1; }
 
 
 /* big play */
