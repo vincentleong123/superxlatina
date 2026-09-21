@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= title %></title>
+<link rel="stylesheet" href="/css/style.css?v=7">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+.admin-wrap{max-width:1200px;margin:0 auto;padding:24px 16px 40px}
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:10px}
+.admin-header h1{font-size:22px;font-weight:800;color:#fbbf24;margin:0;display:flex;align-items:center;gap:8px}
+.admin-header .admin-actions{display:flex;gap:8px;flex-wrap:wrap}
+.admin-btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;border:none;cursor:pointer;transition:all .2s;font-family:Nunito,sans-serif;display:inline-flex;align-items:center;gap:5px}
+.admin-btn.primary{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1a120a}.admin-btn.primary:hover{box-shadow:0 4px 12px rgba(245,158,11,.4)}
+.admin-btn.secondary{background:#241a10;color:#fbbf24;border:1px solid #3a2d1c}.admin-btn.secondary:hover{background:#2a1f12;border-color:#f59e0b}
+.admin-btn.danger{background:#2a1515;color:#ef4444;border:1px solid #4a2626}.admin-btn.danger:hover{background:#3a1d1d}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:rgba(26,19,12,.85);border:1px solid #33261a;border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:14px}
+.stat-card .stat-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.stat-card .stat-icon.purple{background:rgba(245,158,11,.15);color:#f59e0b}
+.stat-card .stat-icon.green{background:#123c28;color:#22c55e}
+.stat-card .stat-icon.blue{background:#12293c;color:#3b82f6}
+.stat-card .stat-icon.pink{background:#3c1630;color:#ec4899}
+.stat-card .stat-num{font-size:24px;font-weight:800;color:#f3ece1;line-height:1}
+.stat-card .stat-label{font-size:12px;color:#8a7d6d;font-weight:600;margin-top:2px}
+
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;background:#1d160e;border:1px solid #33261a;border-radius:10px;padding:4px;flex-wrap:wrap}
+.tab-btn{padding:8px 18px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:Nunito,sans-serif;background:transparent;color:#8a7d6d}
+.tab-btn:hover{color:#d6c9b8}
+.tab-btn.active{background:#241a10;color:#fbbf24;box-shadow:0 2px 8px rgba(0,0,0,.35);border:1px solid #4a3a24}
+
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* Videos table */
+.video-table-wrap{background:rgba(26,19,12,.85);border:1px solid #33261a;border-radius:14px;overflow:hidden}
+.video-table{width:100%;border-collapse:collapse;font-size:13px}
+.video-table th{background:#1d160e;padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#8a7d6d;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #33261a}
+.video-table td{padding:10px 14px;border-bottom:1px solid #33261a;color:#d6c9b8}
+.video-table td .vid-thumb{width:60px;height:34px;border-radius:4px;object-fit:cover;background:#22190f}
+.video-table tr:hover{background:#241a10}
+.video-table .vid-title{font-weight:600;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block}
+.video-table .cat-pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(245,158,11,.14);color:#fbbf24}
+.video-table .host-pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(59,130,246,.14);color:#7cb8ff}
+.video-table .status-badge{padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700}
+.video-table .status-badge.live{background:#123c28;color:#22c55e}
+.video-table .status-badge.off{background:#2a2116;color:#8a7d6d}
+.video-table tr.checked{background:#2a1f12}
+.table-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.table-toolbar .src-filter{padding:8px 12px;border:1px solid #3a2d1c;border-radius:8px;font-size:12px;font-family:Nunito,sans-serif;background:#1d160e;color:#d6c9b8;outline:none}
+.table-toolbar .sel-hint{font-size:11px;color:#8a7d6d;margin-left:auto}
+.bulk-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+
+/* Profile editor */
+.profile-form{max-width:500px;background:rgba(26,19,12,.85);border:1px solid #33261a;border-radius:14px;padding:24px}
+.profile-form label{display:block;font-size:12px;font-weight:700;color:#d6c9b8;margin-bottom:4px;margin-top:14px}
+.profile-form label:first-child{margin-top:0}
+.profile-form input,.profile-form textarea{width:100%;padding:10px 14px;border:1px solid #3a2d1c;border-radius:8px;font-size:13px;font-family:Nunito,sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s;background:#1d160e;color:#e7e0d5}
+.profile-form input:focus,.profile-form textarea:focus{border-color:#f59e0b}
+.profile-form textarea{resize:vertical;min-height:60px}
+.profile-form .profile-preview{margin-top:10px;display:flex;align-items:center;gap:12px}
+.profile-form .profile-preview img{width:60px;height:60px;border-radius:50%;object-fit:cover;background:#22190f}
+
+/* Guide */
+.guide-box{background:rgba(26,19,12,.85);border:1px solid #33261a;border-radius:14px;padding:24px;max-width:600px}
+.guide-box h3{font-size:15px;font-weight:800;color:#fbbf24;margin-bottom:8px}
+.guide-box p,.guide-box li{font-size:13px;color:#b8ab99;line-height:1.6}
+.guide-box ol{padding-left:20px;margin:8px 0}
+.guide-box code{background:#241a10;padding:2px 6px;border-radius:4px;font-size:12px;color:#fbbf24}
+
+/* NLP */
+.nlp-card{background:rgba(26,19,12,.85);border:1px solid #33261a;border-radius:14px;padding:24px;max-width:600px}
+.nlp-card h3{font-size:15px;font-weight:800;color:#fbbf24;margin-bottom:4px}
+.nlp-card p{font-size:13px;color:#b8ab99;line-height:1.6;margin-bottom:14px}
+.nlp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.nlp-stat{background:#1d160e;border-radius:10px;padding:16px;text-align:center}
+.nlp-stat .num{font-size:20px;font-weight:800;color:#f3ece1}
+.nlp-stat .label{font-size:11px;color:#8a7d6d;font-weight:600;margin-top:2px}
+.nlp-preview{background:#1d160e;border-radius:10px;padding:14px;margin:14px 0;max-height:200px;overflow-y:auto;font-size:12px;color:#b8ab99;line-height:1.5;white-space:pre-wrap}
+.nlp-preview h2{font-size:13px;color:#d6c9b8;margin-bottom:4px}
+.nlp-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#241a10;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:8px;opacity:0;transition:opacity .3s;z-index:999;pointer-events:none;border:1px solid #4a3a24}.nlp-toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="admin-wrap">
+  <div class="admin-header">
+    <h1>🐰 Admin Dashboard</h1>
+    <div class="admin-actions">
+      <a href="/" class="admin-btn secondary" target="_blank">View Site</a>
+      <a href="/admin/logout" class="admin-btn danger">Logout</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon purple">📹</div>
+      <div><div class="stat-num"><%= totalVideos %></div><div class="stat-label">Total Videos</div></div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="videos">📹 Videos</button>
+    <button class="tab-btn" data-tab="feed">📥 Feed URLs</button>
+    <button class="tab-btn" data-tab="transformer">⚡ Transformer</button>
+    <button class="tab-btn" data-tab="nlp">🧠 NLP SEO</button>
+    <button class="tab-btn" data-tab="profile">👤 Profile</button>
+  </div>
+
+  <!-- Videos Tab -->
+  <div class="tab-panel active" id="tab-videos">
+    <div class="video-table-wrap">
+      <div class="table-toolbar">
+        <select class="src-filter" id="srcFilter" onchange="filterByHost()">
+          <option value="">All sources (<%= videos.length %>)</option>
+          <% if (typeof sourceHosts !== 'undefined' && sourceHosts.length) { %>
+            <% sourceHosts.forEach(function(h) { %>
+              <option value="<%= h %>" data-count="<%= hostCounts[h] %>"><%= h %> (<%= hostCounts[h] %>)</option>
+            <% }); %>
+          <% } %>
+        </select>
+        <span class="sel-hint">Tip: Shift+click a second check box to select the whole range</span>
+      </div>
+      <div class="bulk-bar">
+        <button class="admin-btn danger" id="bulkDeleteBtn" disabled>🗑 Delete selected (<span id="selCount">0</span>)</button>
+        <button class="admin-btn danger" id="deleteHostBtn" disabled>🗑 Delete all from this source</button>
+        <button class="admin-btn secondary" id="backfillDurBtn" onclick="backfillDurations()">⏱ Re-probe durations</button>
+        <button class="admin-btn secondary" id="backfillThumbBtn" onclick="backfillThumbnails()">🖼 Backfill thumbs</button>
+      </div>
+      <table class="video-table">
+        <thead><tr><th><input type="checkbox" id="checkAll" title="Select all"></th><th>Title</th><th>Category</th><th>Source</th><th>Duration</th><th>Views</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <% if (typeof videos !== 'undefined' && videos && videos.length) { %>
+            <% videos.forEach(function(v) { %>
+              <tr data-id="<%= v.id %>" data-host="<%= v.srcHost || '' %>">
+                <td><input type="checkbox" class="row-check" value="<%= v.id %>" data-host="<%= v.srcHost || '' %>"></td>
+                <td style="display:flex;align-items:center;gap:10px;min-width:280px"><img class="vid-thumb" src="<%= (v.source || (v.sourceUrl && !v.filePath)) ? '/img/' + v.id : (v.thumbnail || '/thumbnails/' + v.id + '.jpg') %>" alt="" onerror="this.style.background='#22190f'"><a class="vid-title" href="/<%= v.id %>" target="_blank"><%= v.title %></a></td>
+                <td><span class="cat-pill"><%= v.category || 'General' %></span></td>
+                <td><span class="host-pill"><%= v.srcHost || '—' %></span></td>
+                <td><%= v.duration || '—' %></td>
+                <td><%= v.views || 0 %></td>
+                <td><span class="status-badge <%= v.source || (v.sourceUrl && !v.filePath) ? 'live' : 'off' %>"><%= v.source || (v.sourceUrl && !v.filePath) ? 'External' : 'Live' %></span></td>
+                <td><button class="admin-btn danger del-single" data-id="<%= v.id %>" data-title="<%= v.title %>">Delete</button></td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr><td colspan="8" style="text-align:center;padding:30px;color:#9ca3af">No videos indexed yet.</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Feed URLs Tab -->
+  <div class="tab-panel" id="tab-feed">
+    <div class="nlp-card" style="max-width:760px">
+      <h3>📥 Feed URLs — add videos by URL</h3>
+      <p>Paste a list of video URLs / <code>&lt;iframe&gt;</code> embeds, one per line (or JSON), and hit <strong>Import</strong>. Each URL becomes a video served through your own player — no downloading, no storage. Supports <code>Title | https://url</code> and <code>#</code> comment lines.</p>
+      <label style="display:block;font-size:12px;font-weight:700;color:#d6c9b8;margin-bottom:4px">URL list</label>
+      <textarea id="feedInput" rows="8" style="width:100%;padding:10px 14px;border:1px solid #3a2d1c;border-radius:8px;font-size:13px;font-family:Nunito,sans-serif;box-sizing:border-box;outline:none" placeholder="# comment
+My Video | https://example.com/video-page
+https://another-site.com/embed/xyz
+<iframe src='https://tube.com/xembed.php?video=abc'></iframe>"></textarea>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="admin-btn primary" id="feedImportBtn" onclick="feedImport()">📥 Import URLs</button>
+        <label class="admin-btn secondary" style="cursor:pointer">📎 Upload file<input type="file" id="feedFile" accept=".txt,.json,text/plain,application/json" style="display:none"></label>
+      </div>
+      <pre id="feedReport" style="display:none;background:#1d160e;border-radius:10px;padding:14px;margin-top:14px;font-size:12px;color:#d6c9b8;line-height:1.6;white-space:pre-wrap"></pre>
+    </div>
+  </div>
+
+  <!-- Transformer Tab -->
+  <div class="tab-panel" id="tab-transformer">
+    <div class="nlp-card" style="max-width:760px">
+      <h3>⚡ Transformer — Hotlink External Video</h3>
+      <p>Paste an external video URL or an <code>&lt;iframe&gt;</code> embed code. The Transformer masks the real source and serves it through your own player — no download, no storage.</p>
+      <label style="display:block;font-size:12px;font-weight:700;color:#d6c9b8;margin-bottom:4px">Source URL or iframe embed</label>
+      <textarea id="txInput" rows="3" style="width:100%;padding:10px 14px;border:1px solid #3a2d1c;border-radius:8px;font-size:13px;font-family:Nunito,sans-serif;box-sizing:border-box;outline:none" placeholder="https://www.1porn.tv/bi/get_file/...  or  <iframe src=...></iframe>"></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <div style="flex:1;min-width:180px">
+          <label style="display:block;font-size:11px;font-weight:700;color:#d6c9b8;margin-bottom:4px">Referer (optional)</label>
+          <input type="text" id="txReferer" style="width:100%;padding:9px 12px;border:1px solid #3a2d1c;border-radius:8px;font-size:12px;font-family:Nunito,sans-serif;box-sizing:border-box;outline:none" placeholder="https://source-site.com/">
+        </div>
+        <div style="flex:1;min-width:180px">
+          <label style="display:block;font-size:11px;font-weight:700;color:#d6c9b8;margin-bottom:4px">Title (for "Add as Video")</label>
+          <input type="text" id="txTitle" style="width:100%;padding:9px 12px;border:1px solid #3a2d1c;border-radius:8px;font-size:12px;font-family:Nunito,sans-serif;box-sizing:border-box;outline:none" placeholder="My Hotlinked Video">
+        </div>
+        <div style="flex:1;min-width:140px">
+          <label style="display:block;font-size:11px;font-weight:700;color:#d6c9b8;margin-bottom:4px">Category</label>
+          <input type="text" id="txCategory" style="width:100%;padding:9px 12px;border:1px solid #3a2d1c;border-radius:8px;font-size:12px;font-family:Nunito,sans-serif;box-sizing:border-box;outline:none" placeholder="General">
+        </div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="admin-btn primary" onclick="transformSource()">🔄 Transform &amp; Test</button>
+        <button class="admin-btn secondary" onclick="addTransformedVideo()">➕ Add as Video</button>
+      </div>
+      <div id="txResult" style="display:none;margin-top:16px;background:#1d160e;border-radius:10px;padding:14px;font-size:12px;color:#d6c9b8;line-height:1.7">
+        <div><strong>Type:</strong> <span id="txType"></span> &nbsp; <strong>Status:</strong> <span id="txStatus"></span> &nbsp; <strong>Size:</strong> <span id="txSize"></span></div>
+        <div style="margin-top:6px;word-break:break-all"><strong>Playback URL:</strong> <a id="txUrl" href="#" target="_blank"></a></div>
+        <div style="margin-top:6px;word-break:break-all"><strong>Source:</strong> <span id="txSource" style="color:#9ca3af"></span></div>
+        <video id="txVideo" controls playsinline preload="metadata" style="width:100%;margin-top:12px;background:#000;border-radius:8px;max-height:340px"></video>
+      </div>
+    </div>
+  </div>
+
+  <!-- NLP SEO Tab -->
+  <div class="tab-panel" id="tab-nlp">
+    <div class="nlp-card">
+      <h3>🧠 NLP Description Engine</h3>
+      <p>Hybrid static-dynamic generator using keyword extraction, synonym rotation, and semantic patterns. Each video gets a unique, SEO-optimized description.</p>
+      <div class="nlp-stats">
+        <div class="nlp-stat"><div class="num"><%= totalVideos %></div><div class="label">Videos</div></div>
+        <div class="nlp-stat"><div class="num" id="nlpRewriteCount"><%= totalVideos %></div><div class="label">Described</div></div>
+        <div class="nlp-stat"><div class="num">🧠</div><div class="label">NLP Active</div></div>
+      </div>
+      <button class="admin-btn primary" onclick="rewriteAllDescriptions()">🔄 Rewrite All Descriptions with NLP</button>
+      <p style="margin-top:10px;font-size:12px;color:#9ca3af">Regenerates every video description using NLP — title extraction, LSI keywords, synonym rotation, brand voice injection. Pure JavaScript, zero API calls.</p>
+    </div>
+    <div class="nlp-card" style="margin-top:16px">
+      <h3>📝 How It Works</h3>
+      <p>Each description is built from <strong>5 hybrid layers</strong>:</p>
+      <ol style="font-size:13px;color:#6b7280;line-height:1.8;padding-left:18px">
+        <li><strong>Static prefix</strong> — Brand intro (e.g. "Welcome to Super X Latina")</li>
+        <li><strong>Title-anchored sentence</strong> — Extracts nouns/verbs from title via <code>compromise</code> NLP</li>
+        <li><strong>Story sentence</strong> — Dynamic narrative with category-specific verbs + sounds</li>
+        <li><strong>SEO sentence</strong> — LSI keywords + long-tail phrase injection</li>
+        <li><strong>Call-to-action</strong> — Varies per generation (never duplicated)</li>
+      </ol>
+      <p style="font-size:12px;color:#9ca3af;margin-top:8px">Keywords are extracted via TF-style ranking (frequency × length). Synonyms rotate from curated word banks (6 categories × 30+ terms each).</p>
+    </div>
+  </div>
+
+  <!-- Profile Tab -->
+  <div class="tab-panel" id="tab-profile">
+    <form class="profile-form" id="profileForm">
+      <label>Your Display Name</label>
+      <input type="text" name="name" value="<%= adminProfile.name %>" placeholder="e.g. Super X Latina Admin">
+      <label>Short Bio</label>
+      <textarea name="bio" rows="2" placeholder="e.g. Latina curator, HD streaming, 24/7 uploads"><%= adminProfile.bio %></textarea>
+      <label>Photo URL (optional)</label>
+      <input type="text" name="photo" value="<%= adminProfile.photo %>" placeholder="https://...">
+      <div class="profile-preview">
+        <img src="<%= adminProfile.photo || '/thumbnails/default-avatar.jpg' %>" alt="" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐰</text></svg>'">
+        <span style="font-size:12px;color:#9ca3af">Your avatar</span>
+      </div>
+      <label>Twitter URL (optional)</label>
+      <input type="text" name="twitter" value="<%= adminProfile.socialLinks.twitter || '' %>" placeholder="https://twitter.com/...">
+      <label>Instagram URL (optional)</label>
+      <input type="text" name="instagram" value="<%= adminProfile.socialLinks.instagram || '' %>" placeholder="https://instagram.com/...">
+      <label>TikTok URL (optional)</label>
+      <input type="text" name="tiktok" value="<%= adminProfile.socialLinks.tiktok || '' %>" placeholder="https://tiktok.com/...">
+      <div style="margin-top:18px">
+        <button type="submit" class="admin-btn primary">Save Profile</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Guide Tab -->
+  <div class="tab-panel" id="tab-guide">
+    <div class="guide-box">
+      <h3>📖 Admin Guide</h3>
+      <ol>
+        <li><strong>Videos</strong> — browse every indexed video. Drop new files in your video folder and run a scan to update.</li>
+        <li><strong>NLP SEO</strong> — regenerate all video descriptions with the NLP engine for fresh, unique SEO copy.</li>
+        <li><strong>Profile</strong> — set your display name, bio, and photo.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+  });
+});
+
+// Profile form
+document.getElementById('profileForm')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const data = new FormData(this);
+  const obj = {};
+  data.forEach((v, k) => obj[k] = v);
+  fetch('/api/admin/profile', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(obj)
+  }).then(r => r.json()).then(d => {
+    alert(d.ok ? 'Profile saved!' : 'Error saving profile');
+  });
+});
+
+function showNlpToast(msg) {
+  let t = document.getElementById('nlpToast');
+  if (!t) { t = document.createElement('div'); t.id = 'nlpToast'; t.className = 'nlp-toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+let lastTransform = null;
+
+function transformSource() {
+  const input = document.getElementById('txInput').value.trim();
+  if (!input) { showNlpToast('Paste a URL or embed code first'); return; }
+  const btn = document.querySelector('#tab-transformer .admin-btn.primary');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Transforming...';
+  fetch('/api/transformer/resolve', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input, referer: document.getElementById('txReferer').value.trim() })
+  }).then(r => r.json()).then(d => {
+    btn.textContent = orig; btn.disabled = false;
+    if (!d.ok) { showNlpToast('❌ ' + (d.error || 'Transform failed')); return; }
+    lastTransform = d;
+    const box = document.getElementById('txResult');
+    box.style.display = 'block';
+    document.getElementById('txType').textContent = d.source.type;
+    document.getElementById('txStatus').textContent = d.info.ok ? ('OK ' + d.info.status) : ('FAIL ' + (d.info.status || d.info.error || ''));
+    document.getElementById('txSize').textContent = d.info.length ? Math.round(d.info.length / 1048576) + ' MB' : '—';
+    const urlEl = document.getElementById('txUrl');
+    urlEl.textContent = d.fullUrl;
+    urlEl.href = d.testPlayer;
+    document.getElementById('txSource').textContent = d.source.url;
+    const v = document.getElementById('txVideo');
+    v.src = d.playbackUrl;
+    v.load();
+    v.play().catch(() => {});
+    showNlpToast('✅ Transformed');
+  }).catch(e => { btn.textContent = orig; btn.disabled = false; showNlpToast('❌ Network error'); });
+}
+
+function addTransformedVideo() {
+  if (!lastTransform) { showNlpToast('Transform a source first'); return; }
+  const title = document.getElementById('txTitle').value.trim();
+  if (!title) { showNlpToast('Enter a title'); return; }
+  const btn = document.querySelectorAll('#tab-transformer .admin-btn')[1];
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Adding...';
+  fetch('/api/transformer/add-video', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      input: lastTransform.source.url,
+      referer: lastTransform.source.referer,
+      title,
+      category: document.getElementById('txCategory').value.trim()
+    })
+  }).then(r => r.json()).then(d => {
+    btn.textContent = orig; btn.disabled = false;
+    if (!d.ok) { showNlpToast('❌ ' + (d.error || 'Add failed')); return; }
+    showNlpToast('✅ Added: ' + d.url);
+    window.open(d.url, '_blank');
+  }).catch(e => { btn.textContent = orig; btn.disabled = false; showNlpToast('❌ Network error'); });
+}
+
+function rewriteAllDescriptions() {
+  if (!confirm('Rewrite all ' + <%= totalVideos %> + ' video descriptions with NLP? This cannot be undone.')) return;
+  const btn = document.querySelector('.nlp-card .admin-btn.primary');
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Rewriting...';
+  fetch('/api/rewrite-descriptions', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => {
+      btn.textContent = orig;
+      btn.disabled = false;
+      if (d.ok) {
+        showNlpToast('✅ ' + d.message);
+        document.getElementById('nlpRewriteCount').textContent = d.total;
+      } else {
+        showNlpToast('❌ Error: ' + (d.error || 'Unknown'));
+      }
+    })
+    .catch(e => {
+      btn.textContent = orig;
+      btn.disabled = false;
+      showNlpToast('❌ Network error');
+    });
+}
+
+// ── Feed URLs: bulk import ──
+// Chunked: a 100-URL paste is NEVER sent as one request. The server resolves
+// every embed URL synchronously (each = a page fetch, throttled ~1.6s/host,
+// only 4 concurrent workers), so a single big POST can take minutes and the
+// proxy/browser kills it ("Network error" / timeout). We send small batches
+// and stream progress into the report box instead.
+function feedImport(textOverride) {
+  const input = document.getElementById('feedInput');
+  const text = textOverride !== undefined ? textOverride : input.value;
+  if (!text.trim()) { showNlpToast('Paste some URLs first'); return; }
+  const btn = document.getElementById('feedImportBtn');
+  const orig = btn.textContent;
+  const reportEl = document.getElementById('feedReport');
+  reportEl.style.display = 'block';
+
+  const CHUNK = 10;
+  const all = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const chunks = [];
+  for (let i = 0; i < all.length; i += CHUNK) chunks.push(all.slice(i, i + CHUNK).join('\n'));
+
+  let done = 0;
+  const stats = { added: 0, skipped: 0, failed: 0, errors: [] };
+
+  const render = () => {
+    let out = 'total: ' + all.length + '\nchunks done: ' + done + '/' + chunks.length + '\nadded: ' + stats.added + '\nskipped (dupes): ' + stats.skipped + '\nfailed: ' + stats.failed;
+    if (stats.errors.length) out += '\n' + stats.errors.slice(0, 25).map(e => '  x ' + (e.url || e.file || '?') + ' — ' + (e.error || 'fail')).join('\n');
+    reportEl.textContent = out;
+  };
+
+  btn.disabled = true; btn.textContent = '⏳ Importing...';
+  const step = () => {
+    if (!chunks.length) {
+      btn.textContent = orig; btn.disabled = false;
+      render();
+      showNlpToast('✅ Imported ' + stats.added + ' video' + (stats.added === 1 ? '' : 's'));
+      if (stats.added) setTimeout(() => location.reload(), 1500);
+      return;
+    }
+    const body = chunks.shift();
+    const count = body.split(/\r?\n/).filter(l => l.trim()).length;
+    btn.textContent = '⏳ Importing chunk ' + (done + 1) + '/' + (done + chunks.length + 1) + '…';
+    reportEl.textContent = 'Importing ' + (done * CHUNK) + '-' + Math.min((done + 1) * CHUNK, all.length) + ' of ' + all.length + ' URLs…';
+    fetch('/api/ingest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body
+    }).then(r => r.json()).then(d => {
+      done++;
+      if (!d.ok) {
+        stats.failed += count;
+        stats.errors.push({ url: 'chunk ' + done, error: d.error || 'unknown' });
+      } else {
+        stats.added += d.added || 0;
+        stats.skipped += d.skipped || 0;
+        stats.failed += d.failed || 0;
+        (d.errors || []).forEach(e => stats.errors.push(e));
+      }
+      render();
+      step();
+    }).catch(e => {
+      done++;
+      stats.failed += count;
+      stats.errors.push({ url: 'chunk ' + done, error: 'network: ' + e.message });
+      render();
+      step();
+    });
+  };
+  step();
+}
+
+document.getElementById('feedFile')?.addEventListener('change', function() {
+  const f = this.files[0];
+  if (!f) return;
+  const fr = new FileReader();
+  fr.onload = () => { document.getElementById('feedInput').value = fr.result; feedImport(fr.result); };
+  fr.readAsText(f);
+});
+
+// ── Thumbnail backfill ──
+function backfillThumbnails() {
+  const btn = document.getElementById('backfillThumbBtn');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Resolving thumbnails (browser)...';
+  showNlpToast('Backfilling thumbnails — this can take a while, watch the report below.');
+  fetch('/api/backfill-thumbnails', { method: 'POST' })
+    .then(r => r.json()).then(d => {
+      btn.textContent = orig; btn.disabled = false;
+      if (!d.ok) { showNlpToast('ERROR: ' + (d.error || 'unknown')); return; }
+      showNlpToast('✅ Thumbs: ' + d.updated + '/' + d.total + ' found');
+      if (d.updated) setTimeout(() => location.reload(), 1500);
+    }).catch(e => {
+      btn.textContent = orig; btn.disabled = false;
+      showNlpToast('Network error: ' + e.message);
+    });
+}
+
+// ── Duration backfill ──
+function backfillDurations() {
+  const btn = document.getElementById('backfillDurBtn');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Probing durations...';
+  fetch('/api/backfill-durations', { method: 'POST' })
+    .then(r => r.json()).then(d => {
+      btn.textContent = orig; btn.disabled = false;
+      if (!d.ok) { showNlpToast('ERROR: ' + (d.error || 'unknown')); return; }
+      showNlpToast('✅ Durations: ' + d.updated + '/' + d.total + ' updated');
+      if (d.updated) setTimeout(() => location.reload(), 1500);
+    }).catch(e => {
+      btn.textContent = orig; btn.disabled = false;
+      showNlpToast('Network error: ' + e.message);
+    });
+}
+
+// ── Library delete controls ──
+let lastCheckedIdx = -1;
+let currentHost = '';
+
+function selCheckboxes() { return Array.prototype.slice.call(document.querySelectorAll('.row-check')); }
+function visibleCheckboxes() { return selCheckboxes().filter(c => c.closest('tr').style.display !== 'none'); }
+function selectedRows() { return selCheckboxes().filter(c => c.checked); }
+
+function filterByHost() {
+  currentHost = document.getElementById('srcFilter').value;
+  let shown = 0;
+  selCheckboxes().forEach(c => {
+    const tr = c.closest('tr');
+    if (!tr) return;
+    if (currentHost && tr.getAttribute('data-host') !== currentHost) tr.style.display = 'none';
+    else { tr.style.display = ''; shown++; }
+  });
+  document.getElementById('deleteHostBtn').disabled = !currentHost;
+  if (currentHost) {
+    document.getElementById('deleteHostBtn').textContent = '🗑 Delete all ' + (document.querySelector('#srcFilter option:checked')?.textContent || currentHost);
+  }
+  updateSel();
+}
+
+function updateSel() {
+  const vis = visibleCheckboxes();
+  const n = selectedRows().length;
+  document.getElementById('selCount').textContent = n;
+  document.getElementById('bulkDeleteBtn').disabled = n === 0;
+  document.getElementById('checkAll').checked = vis.length > 0 && n === vis.length;
+  selCheckboxes().forEach(c => {
+    if (c.checked) c.closest('tr')?.classList.add('checked');
+    else c.closest('tr')?.classList.remove('checked');
+  });
+}
+
+document.getElementById('checkAll')?.addEventListener('change', function() {
+  visibleCheckboxes().forEach(c => { c.checked = this.checked; });
+  updateSel();
+});
+
+// WordPress-style selection: single click toggles, Shift+click checks the whole
+// range between the last clicked checkbox and the current one (in visible order).
+function rowCheckHandler(e) {
+  const box = e.target.closest('.row-check');
+  if (!box) return;
+  const vis = visibleCheckboxes();
+  const idx = vis.indexOf(box);
+  if (e.shiftKey && lastCheckedIdx !== -1 && idx !== -1 && idx !== lastCheckedIdx) {
+    const a = Math.min(lastCheckedIdx, idx);
+    const b = Math.max(lastCheckedIdx, idx);
+    for (let i = a; i <= b; i++) vis[i].checked = true;
+    lastCheckedIdx = idx;
+    updateSel();
+    return;
+  }
+  lastCheckedIdx = idx;
+  updateSel();
+}
+selCheckboxes().forEach(c => c.addEventListener('change', rowCheckHandler));
+
+function doDelete(ids) {
+  const btn = document.getElementById('bulkDeleteBtn');
+  const prev = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Deleting...';
+  fetch('/api/videos/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids })
+  }).then(r => r.json()).then(d => {
+    btn.textContent = prev;
+    if (!d.ok) { showNlpToast('❌ ' + (d.error || 'Delete failed')); btn.disabled = false; return; }
+    showNlpToast('✅ Deleted ' + d.deleted + ' video' + (d.deleted === 1 ? '' : 's'));
+    setTimeout(() => location.reload(), 1200);
+  }).catch(e => { btn.textContent = prev; btn.disabled = false; showNlpToast('❌ Network error'); });
+}
+
+document.getElementById('bulkDeleteBtn')?.addEventListener('click', function() {
+  const ids = selectedRows().map(c => c.value);
+  if (!ids.length) return;
+  if (!confirm('Delete ' + ids.length + ' selected video(s)? This cannot be undone.')) return;
+  doDelete(ids);
+});
+
+document.getElementById('deleteHostBtn')?.addEventListener('click', function() {
+  if (!currentHost) return;
+  const ids = selCheckboxes().filter(c => c.closest('tr').getAttribute('data-host') === currentHost).map(c => c.value);
+  if (!ids.length) return;
+  const hostLabel = document.querySelector('#srcFilter option:checked')?.textContent || currentHost;
+  if (!confirm('Delete ALL ' + ids.length + ' videos from ' + hostLabel + '? This permanently blacklists this source and cannot be undone.')) return;
+  doDelete(ids);
+});
+
+document.querySelectorAll('.del-single').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const id = this.getAttribute('data-id');
+    if (!confirm('Delete "' + this.getAttribute('data-title') + '"? This cannot be undone.')) return;
+    doDelete([id]);
+  });
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+{
+  "videoFolders": [],
+  "thumbnailsFolder": "C:\\thumbnails",
+  "port": 7006,
+  "adminPassword": "Desktop123",
+  "tokenSecret": "C9fc94b16c02a67c3e92a18b0d55e6f6a7c27d2a1f9b4e8c5d0a3f6b9c2e1d4a7",
+  "siteName": "Super X Latina",
+  "siteUrl": "https://superxlatina.com",
+  "externalSync": true,
+  "adminName": "Super X Latina Admin",
+  "adminBio": "Latina video curator, HD streaming, 24/7 uploads.",
+  "adminPhoto": "",
+  "contactEmail": "admin@superxlatina.com",
+  "adminSocial": {
+    "twitter": "",
+    "instagram": "",
+    "tiktok": ""
+  },
+  "scanIntervalMinutes": 0,
+  "trustedIps": [],
+  "browser": {
+    "enabled": true,
+    "fallback": true,
+    "timeoutMs": 45000,
+    "waitMs": 6000,
+    "maxConcurrent": 2,
+    "maxRenders": 60,
+    "headless": true
+  },
+  "transformer": {
+    "enabled": true,
+    "allowAnyHost": true,
+    "blockedHosts": ["xmateur.com"],
+    "referer": "",
+    "hostReferers": {
+      "xvideos.com": "https://www.xvideos.com/",
+      "www.xvideos.com": "https://www.xvideos.com/",
+      "cdn.superxlatina.com": "https://superxlatina.com/"
+    },
+    "resolveTtlMs": 21600000
+  },
+  "seo": {
+    "niche": "latina",
+    "identity": "Latina Videos",
+    "tagline": "Watch HD latina videos free",
+    "homeTitle": "Super X Latina — Free HD Latina & Amateur Videos",
+    "homeDescription": "Watch free latina videos in HD. Stream homemade latina porn, amateur scenes, milf & college latinas — new videos added daily. No sign-up, no paywall. 100% free.",
+    "homeKeywords": "latina, latina videos, latina HD, watch latina free, latina porn, superxlatina, amateur latina streaming",
+    "author": "Super X Latina",
+    "twitter": "@superxlatina",
+    "rssEnabled": true,
+    "faq": [
+      {
+        "q": "What is Super X Latina?",
+        "a": "Super X Latina is a curated latina and amateur video collection with HD streaming and daily updates."
+      },
+      {
+        "q": "Is Super X Latina free?",
+        "a": "Yes, all videos on Super X Latina are free to watch online."
+      },
+      {
+        "q": "What kind of content?",
+        "a": "We curate homemade, amateur and public outdoor latina videos."
+      },
+      {
+        "q": "How often is content added?",
+        "a": "New videos are added regularly to keep the collection fresh."
+      }
+    ]
+  }
+}

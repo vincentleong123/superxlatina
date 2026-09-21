@@ -1,0 +1,4 @@
+{
+  "comment": "Exclusion list for auto-sync. Add a master video id (string) here to keep it off this site. Empty by default — everything clean in the wps master gets imported.",
+  "videos": []
+}

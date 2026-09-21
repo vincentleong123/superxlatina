@@ -1,0 +1,47 @@
+<div id="ageNoticeBar" role="note" aria-label="Adult content notice">
+  <span class="age-icon">🔞</span>
+  <span class="age-text">This website contains adult material. By continuing, you confirm you are at least 18 years old and that adult content is legal in your location.</span>
+  <button type="button" id="ageNoticeOk">OK, I'm 18+</button>
+</div>
+<style>
+#ageNoticeBar {
+  position: fixed; left: 0; right: 0; bottom: 0; transform: translateY(100%);
+  z-index: 2147483646;
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(26, 19, 12, 0.97); border-top: 1px solid rgba(245, 158, 11, 0.4);
+  color: #bbb; font: 400 11px/1.4 system-ui, sans-serif;
+  padding: 6px 14px; border-radius: 0;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+  transition: transform 0.35s ease; will-change: transform;
+}
+#ageNoticeBar.show { transform: translateY(0); }
+#ageNoticeBar .age-icon { font-size: 12px; flex: 0 0 auto; }
+#ageNoticeBar .age-text { flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#ageNoticeBar #ageNoticeOk {
+  flex: 0 0 auto; background: #f59e0b; color: #1a120a; border: none; cursor: pointer;
+  font: 600 10px system-ui, sans-serif; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+}
+#ageNoticeBar #ageNoticeOk:hover { background: #fbbf24; }
+@media (max-width: 480px) {
+  #ageNoticeBar { padding: 5px 10px; gap: 6px; font-size: 10px; }
+}
+</style>
+<script>
+(function () {
+  try {
+    if (localStorage.getItem('shx_age_confirmed_v1')) return;
+  } catch (e) { return; }
+  var bar = document.getElementById('ageNoticeBar');
+  if (!bar) return;
+  var ok = document.getElementById('ageNoticeOk');
+  function dismiss() {
+    bar.classList.remove('show');
+    try { localStorage.setItem('shx_age_confirmed_v1', '1'); } catch (e) {}
+  }
+  setTimeout(function () {
+    bar.classList.add('show');
+    setTimeout(dismiss, 8000);
+  }, 1200);
+  ok.addEventListener('click', dismiss);
+})();
+</script>

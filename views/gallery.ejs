@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="rating" content="RTA-5042-1996-1400-1577-RTA" />
+<%- include('partials/analytics') %><%- seoMeta %>
+<link rel="stylesheet" href="/css/style.css?v=17">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ─── INLINE HERO & CARDS (dark amber) ─── */
+.arnab-hero{text-align:center;padding:56px 0 60px;position:relative;overflow:hidden;margin:0 0 20px;background:linear-gradient(160deg,#120d07 0%,#1a120a 35%,#241708 70%,#2a1c0c 100%);border-bottom:1px solid #3a2d1c}
+.arnab-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(760px 300px at 50% 118%,rgba(245,158,11,.18),transparent 70%);pointer-events:none}
+.arnab-hero-media{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.arnab-hero-media-veil{position:absolute;inset:0;background:radial-gradient(880px 460px at 10% 92%,rgba(245,158,11,.16),transparent 70%),linear-gradient(105deg,rgba(18,13,7,.97) 0%,rgba(22,16,9,.92) 36%,rgba(22,16,9,.3) 60%,rgba(18,13,7,.8) 100%)}
+.arnab-collage{position:relative;height:clamp(360px,44vw,540px);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);gap:12px;transform:rotate(1.2deg)}
+.collage-tile{width:100%;height:100%;object-fit:cover;border-radius:16px;border:1px solid rgba(245,158,11,.42);box-shadow:0 20px 52px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.45);animation:collageFloat 16s ease-in-out infinite alternate}
+.collage-1{grid-column:1/3;grid-row:1/3}
+.collage-2{grid-column:3;grid-row:1/3}
+.collage-3{grid-column:1;grid-row:3/5;animation-delay:-6s}
+.collage-4{grid-column:2;grid-row:3/5;animation-delay:-12s}
+.collage-brand{grid-column:3;grid-row:3/5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-radius:16px;background:radial-gradient(120% 120% at 50% 0%,#f59e0b 0%,#b45309 55%,#78350f 100%);border:1px solid rgba(245,158,11,.55);box-shadow:0 20px 52px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.28);animation:collageFloat 16s ease-in-out infinite alternate;animation-delay:-3s}
+.collage-brand-mark{font-size:clamp(30px,3.4vw,44px);font-weight:900;color:#1a120a;letter-spacing:-1px;line-height:1}
+.collage-brand-txt{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2.5px;color:#422006}
+.collage-mark{position:absolute;right:5%;bottom:1%;font-size:clamp(46px,7vw,96px);font-weight:900;letter-spacing:-1px;white-space:nowrap;color:rgba(245,158,11,.13);pointer-events:none;user-select:none;text-shadow:0 0 34px rgba(245,158,11,.35)}
+@keyframes collageFloat{from{transform:translateY(0) rotate(0)}to{transform:translateY(-9px) rotate(.4deg)}}
+.arnab-hero-inner{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 22px;text-align:center}
+.arnab-hero--home .arnab-hero-inner{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);gap:clamp(24px,5vw,64px);align-items:center;text-align:left}
+.arnab-hero-copy{min-width:0}
+.arnab-hero-badge{display:inline-block;padding:5px 20px;border-radius:30px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1a120a;box-shadow:0 2px 14px rgba(245,158,11,.45)}
+.arnab-hero h1{font-size:clamp(30px,5vw,52px);font-weight:900;line-height:1.08;margin-bottom:12px;color:#fbbf24;text-shadow:0 0 30px rgba(245,158,11,.35)}.arnab-hero h1 span{background:linear-gradient(135deg,#f59e0b,#fcd34d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.arnab-hero-sub{font-size:clamp(15px,2vw,20px);color:#d6c9b8;margin-bottom:4px;font-weight:500;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.5}
+.arnab-hero--home .arnab-hero-sub{margin-left:0;max-width:540px}
+.arnab-hero-stats{display:flex;justify-content:center;gap:10px 24px;flex-wrap:wrap;margin:16px 0 16px;font-size:14px;color:#fbbf24;font-weight:600}
+.arnab-hero--home .arnab-hero-stats{justify-content:flex-start}
+.arnab-hero-stats span{background:rgba(245,158,11,.12);backdrop-filter:blur(6px);padding:5px 16px;border-radius:20px;border:1px solid rgba(245,158,11,.25)}
+.arnab-keywords{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.arnab-hero--home .arnab-keywords{justify-content:flex-start}
+.arnab-keyword{display:inline-flex;align-items:center;gap:4px;padding:5px 14px;border-radius:999px;font-size:12px;font-weight:700;text-decoration:none;transition:all .2s;background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}.arnab-keyword:hover{background:rgba(245,158,11,.22);border-color:#f59e0b;transform:translateY(-1px)}
+.arnab-keyword .emoji{font-size:14px}
+.arnab-cta{display:inline-flex;align-items:center;gap:10px;padding:13px 32px;border-radius:50px;font-size:15px;font-weight:800;text-decoration:none;border:none;cursor:pointer;transition:all .3s;margin:3px;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1a120a;box-shadow:0 4px 20px rgba(245,158,11,.4)}.arnab-cta:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 8px 30px rgba(245,158,11,.55)}.arnab-cta-alt{background:#2a1f12;color:#fbbf24;box-shadow:0 2px 12px rgba(0,0,0,.4)}.arnab-cta-alt:hover{background:#3a2d1c;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+
+/* Tablet: stack copy above the collage, keep the wall centred */
+@media(max-width:900px){
+  .arnab-hero--home .arnab-hero-inner{grid-template-columns:1fr;text-align:center}
+  .arnab-hero--home .arnab-hero-sub{margin-left:auto;max-width:600px}
+  .arnab-hero--home .arnab-hero-stats{justify-content:center}
+  .arnab-hero--home .arnab-keywords{justify-content:center}
+  .arnab-collage{height:clamp(300px,56vw,420px);max-width:620px;margin:26px auto 0}
+}
+/* Mobile: collage becomes a film-strip so the niche is obvious at a glance */
+@media(max-width:768px){
+  .arnab-hero{padding:16px 14px 16px;margin:0 0 10px}
+  .arnab-hero--home .arnab-hero-inner{display:flex;flex-direction:column-reverse;text-align:left}
+  .arnab-hero-copy{padding-top:8px}
+  .arnab-collage{height:96px;grid-template-columns:repeat(4,1fr);grid-template-rows:1fr;gap:8px;transform:none;margin:0;max-width:none}
+  .collage-tile,.collage-brand{grid-column:auto!important;grid-row:auto!important;border-radius:10px;animation:none;box-shadow:0 8px 22px rgba(0,0,0,.5)}
+  .collage-brand{display:none}
+  .collage-mark{display:none}
+  .arnab-hero-badge{padding:3px 12px;font-size:9px;letter-spacing:1px;margin-bottom:6px}
+  .arnab-hero h1{font-size:clamp(17px,4.6vw,21px);margin-bottom:4px}
+  .arnab-hero-sub{font-size:11.5px;margin-bottom:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .arnab-hero-stats{display:none}
+  .arnab-keywords{display:none}
+  .arnab-cta{padding:8px 18px;font-size:12px;margin:2px}
+  .arnab-cta-alt{display:none}
+}
+@media(max-width:420px){
+  .arnab-hero h1{font-size:16px}
+  .arnab-cta{padding:7px 14px;font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){.collage-tile,.collage-brand{animation:none}}
+
+/* Featured carousel */
+.feat-car-section{margin-bottom:28px}
+.feat-car-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 4px}
+.feat-car-title{font-size:16px;font-weight:800;color:#fbbf24;display:flex;align-items:center;gap:6px}
+.feat-car-controls{display:flex;gap:6px}
+.feat-car-btn{width:30px;height:30px;background:#241a10;border:1px solid #3a2d1c;border-radius:50%;color:#fbbf24;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}.feat-car-btn:hover{background:#2a1f12;border-color:#f59e0b}
+.feat-car-container{position:relative;overflow:hidden;border-radius:14px;background:#1d160e;border:1px solid #33261a}
+.feat-car-track{display:flex;transition:transform .5s ease;gap:16px;padding:16px}
+.feat-car-card{flex:0 0 calc(33.333% - 11px);min-width:calc(33.333% - 11px);background:rgba(26,19,12,.85);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .3s ease;position:relative;text-decoration:none;display:block;border:1px solid #33261a}
+.feat-car-card:hover{transform:scale(1.02);border-color:#f59e0b}
+.feat-car-thumb{position:relative;aspect-ratio:16/9;overflow:hidden;background:#22190f}
+.feat-car-thumb img{width:100%;height:100%;object-fit:cover}
+.feat-c-views{position:absolute;bottom:7px;left:7px;background:rgba(0,0,0,.78);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.feat-c-dur{position:absolute;bottom:7px;right:7px;background:rgba(0,0,0,.78);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.feat-c-title{padding:10px 12px;font-size:13px;font-weight:700;line-height:1.3;color:#e7e0d5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.feat-car-dots{display:flex;justify-content:center;gap:8px;margin-top:12px}
+.feat-car-dot{width:8px;height:8px;border-radius:50%;background:#3a2d1c;cursor:pointer;transition:all .2s}.feat-car-dot.active{background:#f59e0b;width:24px;border-radius:4px}.feat-car-dot:hover{background:#fbbf24}
+@media(max-width:768px){.feat-car-card{flex:0 0 100%;min-width:100%}}@media(min-width:769px)and(max-width:1200px){.feat-car-card{flex:0 0 calc(50% - 8px);min-width:calc(50% - 8px)}}
+
+/* Section styles */
+.feed-section{margin-bottom:28px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:6px}
+.section-title-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.section-h2{font-size:18px;font-weight:800;color:#fbbf24;margin:0;line-height:1.2}
+.section-h3{font-size:12px;color:#8a7d6d;font-weight:500;margin:0}
+.section-badge{font-size:9px;font-weight:800;text-transform:uppercase;padding:3px 9px;border-radius:4px;letter-spacing:.5px;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1a120a}
+.section-badge.hot{background:#ef4444}
+.section-badge.new{background:#3b82f6}
+.section-badge.fire{background:#f97316}
+.section-badge.paw{background:linear-gradient(135deg,#f59e0b,#fcd34d)}
+.section-link{font-size:12px;font-weight:600;color:#8a7d6d;text-decoration:none;white-space:nowrap;transition:color .2s}.section-link:hover{color:#f59e0b}
+
+/* Grid layouts */
+.grid-4{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.grid-5{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.grid-6{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.stagger-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.stagger-tall .tube-card .thumb{aspect-ratio:3/4}
+
+/* Card */
+.tube-card{display:block;background:rgba(26,19,12,.85);border:1px solid #33261a;border-radius:14px;overflow:hidden;text-decoration:none;transition:transform .3s cubic-bezier(.33,1,.68,1),border-color .3s,box-shadow .3s;will-change:transform;animation:card-pop .4s cubic-bezier(.33,1,.68,1) both}
+/* rotating card interest — subtle accent variety so every refresh feels fresh */
+.tube-card.tint-a .thumb{outline:2px solid rgba(245,158,11,.25);outline-offset:-2px}
+.tube-card.tint-b .thumb{outline:2px solid rgba(251,191,36,.2);outline-offset:-2px}
+.tube-card.tint-c .thumb{outline:2px solid rgba(245,158,11,.15);outline-offset:-2px}
+.badge.badge-pill.tint-b{background:rgba(168,85,247,.85)}
+.badge.badge-pill.tint-c{background:rgba(59,130,246,.85)}
+.tube-card:hover{transform:translateY(-5px);border-color:#4a3a24;box-shadow:0 12px 32px rgba(245,158,11,.14)}
+.tube-card:nth-child(2){animation-delay:.05s}.tube-card:nth-child(3){animation-delay:.1s}.tube-card:nth-child(4){animation-delay:.15s}.tube-card:nth-child(5){animation-delay:.2s}.tube-card:nth-child(6){animation-delay:.25s}.tube-card:nth-child(7){animation-delay:.3s}.tube-card:nth-child(8){animation-delay:.35s}.tube-card:nth-child(n+9){animation-delay:.38s}
+@keyframes card-pop{0%{opacity:0;transform:translateY(12px) scale(.97)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.tube-card .thumb{position:relative;aspect-ratio:16/11;overflow:hidden;background:#22190f}
+.tube-card .thumb img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.33,1,.68,1)}
+.tube-card:hover .thumb img{transform:scale(1.05)}
+.tube-card .thumb .play-overlay{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;z-index:2}
+.tube-card:hover .play-overlay{opacity:1}
+.tube-card .play-icon{width:44px;height:44px;background:rgba(245,158,11,.92);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:#1a120a;transition:transform .2s;box-shadow:0 0 18px rgba(245,158,11,.45)}
+.tube-card:hover .play-icon{transform:scale(1.12)}
+.tube-card .views{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.8);color:#fff;font-size:11px;padding:3px 8px;border-radius:6px;font-weight:700;pointer-events:none;z-index:2}
+.tube-card .badge{position:absolute;top:8px;left:8px;z-index:2;pointer-events:none}
+.tube-card .badge-pill{padding:3px 10px;border-radius:999px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#fff;background:rgba(245,158,11,.9);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(4px)}
+.tube-card .badge-pill.trending{background:rgba(239,68,68,.85)}
+.tube-card .badge-pill.new{background:rgba(59,130,246,.85)}
+.tube-card .badge-pill.cute{background:rgba(236,72,153,.85)}
+.card-body{padding:10px 12px 12px}
+.card-body .ctitle{font-size:13px;font-weight:700;color:#e7e0d5;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px}
+.card-body .cmeta{font-size:11px;color:#8a7d6d;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.card-body .cmeta .cat-tag{display:inline-block;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.25);color:#fbbf24;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px}
+
+/* Compact card */
+.card-mini{display:block;background:rgba(26,19,12,.85);border:1px solid #33261a;border-radius:10px;overflow:hidden;text-decoration:none;transition:transform .25s,box-shadow .25s}
+.card-mini:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(245,158,11,.12)}
+.card-mini .thumb{position:relative;aspect-ratio:16/11;overflow:hidden;background:#22190f}
+.card-mini .thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.card-mini:hover .thumb img{transform:scale(1.04)}
+.card-mini .views{position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,.78);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600}
+.card-mini .card-body{padding:6px 8px 8px}
+.card-mini .ctitle{font-size:11px;font-weight:600;color:#e7e0d5;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Hover preview video */
+.card-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:3;pointer-events:none;background:#111;opacity:0;visibility:hidden;transition:opacity .15s ease}
+.card-preview.card-preview-live{opacity:1;visibility:visible}
+.tube-card.preview-live .play-overlay,.card-mini.preview-live .play-overlay{opacity:0!important}
+.tube-card.preview-live .thumb img,.card-mini.preview-live .thumb img,.list-card.preview-live .thumb img,.feat-car-card.preview-live .thumb img{opacity:0}
+.tube-card .views,.card-mini .views{z-index:4}
+.list-card .thumb,.feat-car-card .feat-car-thumb{position:relative}
+.list-card .thumb video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:3;pointer-events:none}
+.feat-car-card .feat-car-thumb video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:3;pointer-events:none}
+
+/* Ad row */
+
+/* Skeleton */
+.skeleton-feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;padding:0}
+.skeleton-feed .s-card{background:linear-gradient(90deg,#2a2116 25%,#3a2d1c 50%,#2a2116 75%);background-size:200% 100%;animation:skeleton-load 1.5s infinite;aspect-ratio:16/11;border-radius:14px;padding-bottom:48px;box-sizing:content-box}
+@keyframes skeleton-load{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Carousel card (in feed) */
+.carousel-card{flex:0 0 260px;scroll-snap-align:start;border-radius:12px;overflow:hidden}
+.carousel-card .tube-card{border:none;border-radius:0}.carousel-card .tube-card:hover{transform:none;box-shadow:none}
+.carousel-section{margin-bottom:28px}
+.carousel-header{display:flex;align-items:center;justify-content:space-between;padding:0 0 12px}
+.carousel-header .section-h2{font-size:16px}
+.carousel-container{overflow:hidden;position:relative}
+.carousel-track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:8px;scrollbar-width:thin;scrollbar-color:#f59e0b #33261a}
+.carousel-track::-webkit-scrollbar{height:6px}.carousel-track::-webkit-scrollbar-track{background:#33261a;border-radius:3px}.carousel-track::-webkit-scrollbar-thumb{background:#f59e0b;border-radius:3px}
+
+/* List card */
+.list-card{display:flex;gap:12px;background:rgba(26,19,12,.85);border:1px solid #33261a;border-radius:12px;overflow:hidden;padding:8px;text-decoration:none;transition:transform .25s,box-shadow .25s}
+.list-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(245,158,11,.12)}
+.list-card .thumb{flex:0 0 140px;aspect-ratio:16/11;overflow:hidden;border-radius:8px;background:#22190f}
+.list-card .thumb img{width:100%;height:100%;object-fit:cover}
+.list-card .list-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.list-card .ltitle{font-size:14px;font-weight:700;color:#e7e0d5;line-height:1.3;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.list-card .lmeta{font-size:12px;color:#8a7d6d;display:flex;align-items:center;gap:8px}
+.grid-list{display:grid;gap:12px}
+
+/* Responsive grid */
+@media(max-width:1024px){.grid-4,.grid-3,.grid-43{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){.grid-4,.grid-5,.grid-3,.grid-43{grid-template-columns:repeat(2,1fr);gap:12px}.tube-card .thumb{aspect-ratio:16/11}.tube-card .card-body{padding:8px 10px}.card-body .ctitle{font-size:12px}.list-card .thumb{flex:0 0 100px}}
+@media(max-width:480px){.grid-4,.grid-5,.grid-6,.grid-3,.stagger-grid,.grid-43{grid-template-columns:repeat(2,1fr);gap:8px}.carousel-card{flex:0 0 180px}.tube-card{border-radius:10px}.tube-card .card-body{padding:6px 8px}.card-body .ctitle{font-size:11px}.list-card .thumb{flex:0 0 80px;border-radius:6px}.list-card{padding:6px;gap:8px}.list-card .ltitle{font-size:12px}.feat-car-card{flex:0 0 100%;min-width:100%}}
+
+/* SEO content at bottom */
+.seo-content{max-width:800px;margin:32px auto 0;padding:24px 0;text-align:center;border-top:1px solid #33261a}
+.seo-content h3{font-size:14px;font-weight:700;color:#fbbf24;margin-bottom:8px}
+.seo-content p{font-size:13px;color:#b8ab99;line-height:1.6;max-width:600px;margin:0 auto}
+.seo-links{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px}
+.seo-links a{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-decoration:none;color:#8a7d6d;background:#1d160e;border:1px solid #33261a;transition:all .2s}.seo-links a:hover{color:#fbbf24;background:#2a1f12;border-color:#f59e0b}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#241a10;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:8px;opacity:0;transition:opacity .3s;z-index:999;pointer-events:none;border:1px solid #4a3a24}.toast.show{opacity:1}
+
+/* No results */
+.no-results{text-align:center;padding:60px 20px;color:#8a7d6d}
+.no-results .no-icon{font-size:48px;margin-bottom:12px}
+.no-results h3{font-size:18px;color:#b8ab99;margin-bottom:6px}
+.no-results p{font-size:14px}
+
+/* Tap-to-open dropdown (touch devices have no hover) */
+.nav-dropdown.open .dropdown-menu{display:block}
+@media(max-width:768px){.nav-dropdown .dropdown-menu{min-width:150px;max-height:60vh;overflow-y:auto}}
+
+/* ─── THUMBNAIL BOOST — Nikon DSLR look + clarity ───
+   Natural color, light clean exposure, lifted skin tones. Sharpening trick:
+   softening blur cut to a hair + micro-contrast bump = pulled-clarity look,
+   like a Nikon RAW with light sharpening in post. */
+.tube-card .thumb img,
+.card-mini .thumb img,
+.list-card .thumb img,
+.feat-car-card .feat-car-thumb img,
+.collage-tile{
+  filter:blur(.15px) brightness(1.12) saturate(1.12) contrast(1.07);
+  transition:filter .3s,transform .5s cubic-bezier(.33,1,.68,1);
+}
+.tube-card:hover .thumb img,.card-mini:hover .thumb img,.list-card:hover .thumb img{filter:blur(.15px) brightness(1.18) saturate(1.22) contrast(1.1)}
+</style>
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="container top-bar-inner">
+    <a href="/" class="logo">Super X Latina</a>
+    <div class="search-wrap">
+      <span class="icon">&#x1F50D;</span>
+      <input type="text" id="searchInput" placeholder="Search latina videos..." autocomplete="off">
+    </div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">&#x2630;</button>
+    <nav class="nav" id="navMenu">
+      <a href="/">Home</a>
+      <% if (categories && categories.length) { %>
+        <div class="nav-dropdown">
+          <a href="#">Categories &#x25BE;</a>
+          <div class="dropdown-menu">
+            <% categories.forEach(function(c) { %>
+              <a href="/category/<%= encodeURIComponent(c.toLowerCase()) %>"><%= c %></a>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+      <a href="/about">About</a>
+    </nav>
+  </div>
+</header>
+
+<% if (!currentCategory) { %>
+<!-- ─── HERO — Cinematic Latina collage ─── -->
+<div class="arnab-hero arnab-hero--home">
+  <div class="arnab-hero-media" aria-hidden="true">
+    <div class="arnab-hero-media-veil"></div>
+    <div class="collage-mark">SUPER X</div>
+  </div>
+  <div class="arnab-hero-inner">
+    <div class="arnab-hero-copy">
+      <div class="arnab-hero-badge">&#x1F525; 100% FREE &middot; NO SIGN-UP &middot; UPDATED DAILY</div>
+      <h1>Every <span>Latina</span> Fantasy, In HD</h1>
+      <div class="arnab-hero-sub">Super X Latina &mdash; hand-picked latina, amateur &amp; uncensored clips, free to stream in 1080p. No account, no paywall &mdash; ever.</div>
+      <div class="arnab-hero-stats">
+        <span>&#x1F3AC; <%= totalVideos %> latina videos</span>
+        <span>&#x26A1; Instant streaming</span>
+        <span>&#x1F525; Zero paywall</span>
+      </div>
+      <div class="arnab-keywords" id="heroKeywords">
+        <% if (categories && categories.length) { %>
+          <% categories.slice(0, 7).forEach(function(c) { %>
+            <a href="/category/<%= encodeURIComponent(c.toLowerCase()) %>" class="arnab-keyword"><span class="emoji">&#x1F525;</span> <%= c %></a>
+          <% }); %>
+        <% } %>
+      </div>
+      <div>
+        <a href="#videoFeed" class="arnab-cta" onclick="event.preventDefault();document.getElementById('videoFeed').scrollIntoView({behavior:'smooth'})">&#x25B6; Watch All Videos</a>
+        <a href="/about" class="arnab-cta arnab-cta-alt">&#x25CE; About the Vault</a>
+      </div>
+    </div>
+    <% if (typeof heroImages !== 'undefined' && heroImages.length) { %>
+    <div class="arnab-collage">
+      <% heroImages.forEach(function(img, i) { %>
+      <img src="<%= img.src || img %>" alt="<%= img.alt || 'Super X Latina — free HD latina videos' %>" class="collage-tile collage-<%= i + 1 %>" loading="<%= i === 0 ? 'eager' : 'lazy' %>" <%= i === 0 ? 'fetchpriority="high"' : '' %> decoding="async" onerror="this.style.display='none'">
+      <% }); %>
+      <div class="collage-brand" aria-hidden="true"><span class="collage-brand-mark">SX</span><span class="collage-brand-txt">Latina Vault</span></div>
+    </div>
+    <% } %>
+  </div>
+</div>
+<% } else { %>
+<!-- ─── CATEGORY HERO ─── -->
+<div class="arnab-hero">
+  <div class="arnab-hero-inner">
+    <h1 style="font-size:clamp(24px,4vw,38px)"><%= currentCategory %> Latina Videos</h1>
+    <div class="arnab-hero-sub">Watch the best <%= currentCategory.toLowerCase() %> latina videos in HD — new clips added daily!</div>
+    <div class="arnab-hero-stats">
+      <span>&#x1F4F9; <%= totalVideos %> videos</span>
+      <span>&#x1F525; Super X Latina</span>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<main class="container">
+  <!-- ─── FEATURED CAROUSEL ─── -->
+  <% if (featured && featured.length >= 3) { %>
+  <div class="feat-car-section" id="featCarSection">
+    <div class="feat-car-header">
+      <div class="feat-car-title">&#x2B50; Featured Latina Videos</div>
+      <div class="feat-car-controls">
+        <button class="feat-car-btn" id="featPlayPauseBtn" onclick="toggleFeatCarousel()" title="Play/Pause">&#x23F8;&#xFE0F;</button>
+      </div>
+    </div>
+    <div class="feat-car-container">
+      <div class="feat-car-track" id="featCarTrack">
+        <% featured.forEach(function(v) { %>
+        <a href="/<%= v.id %>" class="feat-car-card" data-id="<%= v.id %>">
+          <div class="feat-car-thumb">
+            <img src="<%= v.thumbnail || '/thumbnails/' + v.id + '.jpg' %>" alt="<%= v.title %>" loading="lazy" onerror="this.parentElement.innerHTML='<div class=skeleton-thumb>'">
+            <span class="feat-c-dur"><%= v.duration || '0:30' %></span>
+            <span class="feat-c-views">&#x1F4E1; <%= v.views || 0 %></span>
+          </div>
+          <div class="feat-c-title"><%= v.title %></div>
+        </a>
+        <% }); %>
+      </div>
+    </div>
+    <div class="feat-car-dots" id="featCarDots"></div>
+  </div>
+  <% } %>
+
+  <!-- ─── VIDEO FEED (CMS-style, built by JS) ─── -->
+  <div id="videoFeed">
+    <% if (videos && videos.length) { %>
+    <% const ssrSeed = videos.slice(0, 24); %>
+    <div class="feed-section">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2 class="section-h2">&#x1F4E1; Latest Latina Uploads</h2>
+          <h3 class="section-h3">Fresh HD clips</h3>
+          <span class="section-badge new">NEW</span>
+        </div>
+        <a href="#" class="section-link" onclick="event.preventDefault()">View all &#x2192;</a>
+      </div>
+      <div class="grid-4">
+        <% ssrSeed.forEach(function(v) { %>
+        <a href="/<%= v.id %>" class="tube-card" data-id="<%= v.id %>">
+          <div class="thumb">
+            <img src="<%= v.thumbnail || '/thumbnails/' + v.id + '.jpg' %>" alt="<%= v.title %>" loading="lazy" onerror="this.parentElement.innerHTML='<div class=skeleton-thumb>'">
+            <div class="play-overlay"><span class="play-icon">&#x25B6;</span></div>
+            <span class="views"><%= v.duration || '0:30' %></span>
+          </div>
+          <div class="card-body">
+            <div class="ctitle"><%= v.title %></div>
+            <div class="cmeta"><span>&#x1F4E1; <%= v.views || 0 %></span></div>
+          </div>
+        </a>
+        <% }); %>
+      </div>
+    </div>
+    <% } %>
+  </div>
+
+  <div class="no-results" id="noResults" style="display:none">
+    <div class="no-icon">&#x1F50D;</div>
+    <h3>No videos found</h3>
+    <p>Try different keywords or browse categories</p>
+  </div>
+
+  <!-- ─── SEO CONTENT (NLP-generated) ─── -->
+  <% if (!currentCategory) { %>
+  <div class="seo-content">
+    <h3>&#x1F525; <%- pageSEOTitle || 'Super X Latina — Watch Free HD Latina Online' %></h3>
+    <p><%- pageSEOText || 'Super X Latina streams the best HD latina and latina videos. New content added daily — fast streaming for all viewers.' %></p>
+    <div class="seo-links">
+      <a href="https://xmelayu.site">xMelayu — Southeast Asian Amateur Videos</a>
+      <a href="https://superxhentai.com">Super X Hentai — HD Hentai Videos</a>
+      <% if (categories && categories.length) { %>
+        <% categories.slice(0, 6).forEach(function(c) { %>
+          <a href="/category/<%= encodeURIComponent(c.toLowerCase()) %>"><%= c %> Latina</a>
+        <% }); %>
+      <% } %>
+      <a href="/sitemap.xml">Sitemap</a>
+      <a href="/feed.xml">RSS</a>
+    </div>
+  </div>
+  <% } %>
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <div class="logo">Super X Latina</div>
+      <p>HD latina videos, amateur and uncensored content. New videos added daily — fast, free streaming.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Browse</h4>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/about">About Super X Latina</a>
+        <% if (categories && categories.length) { %>
+          <% categories.slice(0, 5).forEach(function(c) { %>
+            <a href="/category/<%= encodeURIComponent(c.toLowerCase()) %>"><%= c %> Latina</a>
+          <% }); %>
+        <% } %>
+      </nav>
+    </div>
+    <div class="footer-links">
+      <h4>Legal</h4>
+      <nav>
+        <a href="/dmca">DMCA</a>
+        <a href="/terms">Terms</a>
+        <a href="/2257">2257</a>
+        <a href="/privacy-policy">Privacy Policy</a>
+        <a href="/contact">Contact</a>
+        <a href="/faq">FAQ</a>
+      </nav>
+    </div>
+    <div class="footer-links">
+      <h4>Network</h4>
+      <nav>
+        <a href="https://xmelayu.site">xMelayu — Southeast Asian Amateur Videos</a>
+        <a href="https://superxhentai.com">Super X Hentai — HD Hentai Videos</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>&#x1F525; Super X Latina &mdash; Free HD Latina Streaming</p>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───
+const state = {
+  videos: [],
+  featIdx: 0,
+  featPlaying: true,
+  featInterval: null
+};
+
+const featuredVideos = <%- JSON.stringify(featured || []) %>;
+const allVideos = <%- JSON.stringify(videos || []) %>;
+var currentCat = '<%- currentCategory || "" %>';
+
+// ─── SHUFFLE ───
+const shuffle = a => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+
+// ─── HELPERS ───
+function h(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtViews(n) { n = Number(n) || 0; if (n >= 1e6) return (n/1e6).toFixed(1)+'M'; if (n >= 1e3) return (n/1e3).toFixed(1)+'K'; return n; }
+
+// ─── CARD BUILDERS ───
+// Rotating "interest badges" so a page always looks a little different on each
+// refresh (purely client-side, no effect on SEO or ordering).
+const SPOT_BADGES = ['&#x2B50; Top Pick','&#x1F4A5; Buzz','&#x1F31F; Spotlight','&#x1F4C8; Rising','&#x26A1; Viral','&#x2728; Fresh'];
+const TINTS = ['tint-a','tint-b','tint-c',''];
+function wanderBadge(v) {
+  if (v.views > 5000) return '<span class="badge badge-pill trending">&#x1F525; Trending</span>';
+  const r = Math.random();
+  if (r < 0.20) return '<span class="badge badge-pill tint-b">'+SPOT_BADGES[Math.floor(Math.random()*SPOT_BADGES.length)]+'</span>';
+  if (r < 0.28) return '<span class="badge badge-pill tint-c">&#x2728; New</span>';
+  return '';
+}
+function cardHtml(v) {
+  const thumb = v.thumbnail || '/thumbnails/' + v.id + '.jpg';
+  const trending = wanderBadge(v);
+  const tint = TINTS[Math.floor(Math.random() * TINTS.length)];
+  const catTag = v.category ? '<span class="cat-tag">'+h(v.category)+'</span>' : '';
+  return '<a href="/'+v.id+'" class="tube-card'+(tint?' '+tint:'')+'" data-id="'+v.id+'">' +
+    '<div class="thumb">' +
+      '<img src="'+thumb+'" alt="'+h(v.title)+'" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=skeleton-thumb>\'">' +
+      '<div class="play-overlay"><span class="play-icon">&#x25B6;</span></div>' +
+      '<span class="views">'+(v.duration||'0:30')+'</span>' +
+      trending +
+    '</div>' +
+    '<div class="card-body">' +
+      '<div class="ctitle">'+h(v.title)+'</div>' +
+      '<div class="cmeta"><span>&#x1F4E1; '+fmtViews(v.views)+'</span>'+catTag+'</div>' +
+    '</div></a>';
+}
+
+function compactCard(v) {
+  const thumb = v.thumbnail || '/thumbnails/' + v.id + '.jpg';
+  return '<a href="/'+v.id+'" class="card-mini" data-id="'+v.id+'">' +
+    '<div class="thumb">' +
+      '<img src="'+thumb+'" alt="'+h(v.title)+'" loading="lazy">' +
+      '<span class="views">'+(v.duration||'0:30')+'</span>' +
+    '</div>' +
+    '<div class="card-body"><div class="ctitle">'+h(v.title)+'</div></div></a>';
+}
+
+function listCard(v) {
+  const thumb = v.thumbnail || '/thumbnails/' + v.id + '.jpg';
+  return '<a href="/'+v.id+'" class="list-card" data-id="'+v.id+'">' +
+    '<div class="thumb"><img src="'+thumb+'" alt="'+h(v.title)+'" loading="lazy"></div>' +
+    '<div class="list-body">' +
+      '<div class="ltitle">'+h(v.title)+'</div>' +
+      '<div class="lmeta"><span>&#x1F4E1; '+fmtViews(v.views)+'</span>'+(v.category?' <span> &middot; '+h(v.category)+'</span>':'')+'</div>' +
+    '</div></a>';
+}
+
+// ─── SECTION TITLES ───
+const SEO_TITLES = {
+  'carousel': { h2: '&#x1F525; Trending Latina Videos', h3: 'Most watched this week', badge: 'HOT', badgeClass: 'hot' },
+  'grid-4': { h2: '&#x1F4E1; Latest Latina Uploads', h3: 'Fresh HD clips', badge: 'NEW', badgeClass: 'new' },
+  'grid-3': { h2: '&#x2B50; Popular This Week', h3: 'Top rated latina', badge: 'HOT', badgeClass: 'hot' },
+  'grid-5': { h2: '&#x1F49C; Recommended For You', h3: 'More latina picks', badge: '', badgeClass: '' },
+  'grid-6': { h2: '&#x1F4F9; More to Explore', h3: 'Related latina videos', badge: '', badgeClass: '' },
+  'list': { h2: '&#x1F3AF; Top Picks', h3: 'Editor\'s choice', badge: 'HOT', badgeClass: 'hot' },
+  'compact': { h2: '&#x26A1; Quick Watch', h3: 'Short &amp; snappy latina clips', badge: '', badgeClass: '' },
+  'stagger': { h2: '&#x1F3AC; Mix & Match', h3: 'Variety of latina', badge: '', badgeClass: '' }
+};
+
+const SECTION_TITLE_POOL = {
+  'carousel': ['Trending Latina Videos', 'Most Watched Latina', 'Popular Latina Clips'],
+  'grid-4': ['New Latina Uploads', 'Fresh HD Videos', 'Latest Latina Clips'],
+  'grid-3': ['Curated Latina Picks', 'Featured Latina', 'Premium HD Content'],
+  'grid-5': ['Keep Watching Latina', 'More Latina Videos', 'Similar Content'],
+  'grid-6': ['Quick Latina Picks', 'Related Latina Videos', 'You May Also Like'],
+  'list': ['Top Latina Videos', 'Best Latina Clips', 'Editor\'s Latina Picks'],
+  'compact': ['Browse More Latina', 'More Videos Like This', 'Related Latina Content'],
+  'stagger': ['Diverse Latina Selection', 'Mixed Latina Videos', 'Curated Latina Mix']
+};
+function randomTitle(type) {
+  const pool = SECTION_TITLE_POOL[type] || ['Latina Videos'];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// ─── CREATE SECTION ───
+function createSection(type, videos, extraCls) {
+  if (!videos || !videos.length) return '';
+  let content = '';
+  switch(type) {
+    case 'carousel':
+      content = '<div class="carousel-container"><div class="carousel-track">'+videos.map(v => '<div class="carousel-card">'+cardHtml(v)+'</div>').join('')+'</div></div>';
+      break;
+    case 'grid-4': content = '<div class="grid-4">'+videos.map(v => cardHtml(v)).join('')+'</div>'; break;
+    case 'grid-3': content = '<div class="grid-3">'+videos.map(v => cardHtml(v)).join('')+'</div>'; break;
+    case 'grid-5': content = '<div class="grid-5">'+videos.map(v => cardHtml(v)).join('')+'</div>'; break;
+    case 'grid-6': content = '<div class="grid-6">'+videos.map(v => cardHtml(v)).join('')+'</div>'; break;
+    case 'list': content = '<div class="grid-list">'+videos.map(v => listCard(v)).join('')+'</div>'; break;
+    case 'compact': content = '<div class="grid-5">'+videos.map(v => compactCard(v)).join('')+'</div>'; break;
+    case 'stagger': content = '<div class="stagger-grid">'+videos.map(v => '<div class="stagger-tall">'+cardHtml(v)+'</div>').join('')+'</div>'; break;
+    default: content = '<div class="grid-4">'+videos.map(v => cardHtml(v)).join('')+'</div>';
+  }
+  const st = SEO_TITLES[type] || { h2: randomTitle(type), h3: '', badge: '', badgeClass: '' };
+  const h2 = st.h2 || randomTitle(type);
+  return '<div class="feed-section '+(extraCls||'')+'">' +
+    '<div class="section-header">' +
+      '<div class="section-title-group">' +
+        '<h2 class="section-h2">'+h2+'</h2>' +
+        (st.h3 ? '<h3 class="section-h3">'+st.h3+'</h3>' : '') +
+        (st.badge ? '<span class="section-badge '+st.badgeClass+'">'+st.badge+'</span>' : '') +
+      '</div>' +
+      '<a href="#" class="section-link" onclick="event.preventDefault()">View all &#x2192;</a>' +
+    '</div>' + content + '</div>';
+}
+
+// ─── LAYOUT PATTERNS ───
+const LAYOUT_PATTERNS = [
+  ['carousel', 'grid-4', 'list', 'grid-5'],
+  ['grid-3', 'carousel', 'compact', 'grid-4'],
+  ['list', 'grid-5', 'carousel', 'grid-4', 'stagger'],
+  ['grid-4', 'compact', 'carousel', 'grid-3'],
+  ['compact', 'grid-5', 'list', 'grid-4', 'carousel'],
+  ['stagger', 'grid-3', 'grid-5', 'list'],
+  ['grid-6', 'carousel', 'grid-4', 'compact']
+];
+
+// ─── BUILD FEED ───
+function buildFeed(videos) {
+  if (!videos || !videos.length) return '';
+  const shuffled = shuffle([...videos]);
+  const avgPerSection = 12;
+  const totalSections = Math.ceil(shuffled.length / avgPerSection);
+  let html = '';
+  let idx = 0;
+  let patternCycle = 0;
+
+  while (idx < shuffled.length) {
+    const pattern = LAYOUT_PATTERNS[patternCycle % LAYOUT_PATTERNS.length];
+    patternCycle++;
+    pattern.forEach(type => {
+      if (idx >= shuffled.length) return;
+      const counts = { carousel: 12, 'grid-4': 12, 'grid-3': 9, 'grid-5': 15, 'grid-6': 18, list: 10, compact: 18, stagger: 15 };
+      const count = Math.min(counts[type] || 12, shuffled.length - idx);
+      const slice = shuffled.slice(idx, idx + count);
+      if (slice.length) {
+        html += createSection(type, slice);
+        idx += count;
+      }
+    });
+  }
+  return html;
+}
+
+// ─── RENDER ───
+function render(videos) {
+  const feed = document.getElementById('videoFeed');
+  if (!feed) return;
+
+  // Show skeleton
+  feed.innerHTML = '<div class="skeleton-feed"><div class="s-card"></div><div class="s-card"></div><div class="s-card"></div><div class="s-card"></div><div class="s-card"></div><div class="s-card"></div></div>';
+
+  requestAnimationFrame(() => {
+    feed.innerHTML = buildFeed(videos);
+    attachPreviews();
+  });
+}
+
+// ─── HOVER PREVIEW ENGINE (prefetch-ahead, 12s mark, 6 concurrent) ───
+const videoById = {};
+(allVideos || []).forEach(v => { videoById[v.id] = v; });
+
+const MAX_CONCURRENT_PREVIEWS = ('ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0) ? 4 : 6;
+const MAX_PREFETCH_INFLIGHT = 6;
+const MAX_CACHE_BYTES = 48 * 1024 * 1024;   // keep objectURL blobs ~48MB max
+const PREFETCH_MARGIN = '0px 0px 600% 0px'; // start fetching ~6 viewports ahead
+const previewState = { active: 0, queue: [] };
+const previewCache = {};      // id -> { url, bytes } (instant re-hover)
+const previewCacheOrder = []; // MRU order for byte-budgeted eviction
+const previewFetching = {};   // id -> in-flight Promise<url>
+let previewCacheBytes = 0;
+
+function detectConnectionSpeed() {
+  if (navigator.connection && navigator.connection.effectiveType) {
+    const t = navigator.connection.effectiveType;
+    if (t === 'slow-2g' || t === '2g') return 'slow';
+    if (t === '3g') return 'medium';
+  }
+  return 'fast';
+}
+const CONNECTION_SPEED = detectConnectionSpeed();
+
+// Request only the bytes the browser actually needs: the server precomputes
+// v.pv = byte offset of the 12s mark inside a faststart MP4 (moov atom at the
+// front), so one contiguous chunk [0..pv+~6s] covers moov + samples to ~18s.
+// Clamp to a per-connection cap so slow links never pull a huge blob.
+function previewRange(v) {
+  const cap = CONNECTION_SPEED === 'fast' ? 6291456 : CONNECTION_SPEED === 'medium' ? 4194304 : 2097152;
+  if (v && v.size && v.dur) {
+    const pv = v.pv || Math.round((12 / v.dur) * v.size);
+    let end = Math.round(pv * 1.6);
+    end = Math.max(end, Math.min(1048576, v.size - 1));
+    end = Math.min(end, cap, v.size - 1);
+    return { start: 0, end };
+  }
+  const end = Math.min(cap, 5242880);
+  return { start: 0, end };
+}
+
+function getPreviewTime(v) {
+  if (v && v.dur && v.dur < 12) return Math.max(0.03, Math.floor(v.dur * 0.3));
+  return 12; // the 12-second mark
+}
+
+function cachePreviewUrl(id, url, bytes) {
+  if (previewCache[id]) { URL.revokeObjectURL(previewCache[id].url); previewCacheBytes -= previewCache[id].bytes; }
+  previewCache[id] = { url, bytes: bytes || 0 };
+  previewCacheBytes += bytes || 0;
+  const ix = previewCacheOrder.indexOf(id);
+  if (ix >= 0) previewCacheOrder.splice(ix, 1);
+  previewCacheOrder.push(id);
+  while (previewCacheBytes > MAX_CACHE_BYTES && previewCacheOrder.length) {
+    const oldest = previewCacheOrder.shift();
+    if (oldest && previewCache[oldest]) {
+      previewCacheBytes -= previewCache[oldest].bytes;
+      URL.revokeObjectURL(previewCache[oldest].url);
+      delete previewCache[oldest];
+    }
+  }
+}
+
+// Fetch a preview chunk once per video; later calls reuse the cached blob or
+// the in-flight promise, so hover + prefetch never double-fetch.
+function prefetchPreview(v) {
+  if (!v) return null;
+  if (previewCache[v.id]) return Promise.resolve(previewCache[v.id].url);
+  if (previewFetching[v.id]) return previewFetching[v.id];
+  // Tiny pre-generated clip (v.preview, ~60-400KB) fetched whole in one hit;
+  // fall back to a pv-anchored byte-range chunk of the full video.
+  const r = previewRange(v);
+  const src = v.preview || v.video;
+  const init = v.preview ? {} : { headers: { Range: 'bytes=' + r.start + '-' + r.end } };
+  const p = fetch(src, init)
+    .then(res => (res.ok && res.status !== 416) ? res.blob() : Promise.reject(new Error('range')))
+    .then(blob => {
+      if (!blob.size) throw new Error('empty');
+      const url = URL.createObjectURL(blob);
+      cachePreviewUrl(v.id, url, blob.size);
+      return url;
+    });
+  previewFetching[v.id] = p;
+  p.then(() => { delete previewFetching[v.id]; }, () => { delete previewFetching[v.id]; });
+  return p;
+}
+
+function loadPreviewBlob(v, cb) {
+  const p = prefetchPreview(v);
+  if (p) p.then(url => cb(url));
+  else cb(null);
+}
+
+function showPreview(card, v) {
+  if (card.querySelector('.card-preview')) return;
+  card.dataset.previewOn = '1';
+  if (CONNECTION_SPEED === 'slow') return; // thumbnail only on slow links
+  previewState.queue.push({ card, v });
+  drainPreviewQueue();
+}
+
+function drainPreviewQueue() {
+  while (previewState.active < MAX_CONCURRENT_PREVIEWS && previewState.queue.length) {
+    const item = previewState.queue.shift();
+    if (item.card && item.card.isConnected && item.card.dataset.previewOn) {
+      startPreview(item.card, item.v);
+    }
+  }
+}
+
+function startPreview(card, v) {
+  previewState.active++;
+  const thumb = card.querySelector('.thumb, .feat-car-thumb');
+  const release = () => { previewState.active--; drainPreviewQueue(); };
+  if (!thumb) return release();
+  const video = document.createElement('video');
+  video.className = 'card-preview';
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.preload = 'auto'; // blob is already in memory → decodes instantly
+  thumb.appendChild(video);
+  card.classList.add('previewing');
+  loadPreviewBlob(v, url => {
+    if (!url) { if (video.isConnected) video.remove(); card.classList.remove('previewing'); return release(); }
+    if (!video.isConnected) { release(); return; }
+    video.src = url;
+    // Clip mode starts at 0 (it was cut from the 12s mark); full-video mode
+    // seeks to the 12s mark.
+    const seekTo = v.preview ? 0.5 : getPreviewTime(v);
+    // Seek first, then reveal + play only once a frame at the target is
+    // decoded. Until then the video stays hidden and the thumbnail stays
+    // visible, so there is never a black flash.
+    video.addEventListener('loadedmetadata', () => {
+      try { video.currentTime = seekTo; } catch (e) {}
+    }, { once: true });
+    const reveal = () => {
+      if (!video.isConnected) return;
+      video.classList.add('card-preview-live');
+      card.classList.add('preview-live');
+      try { const p = video.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+    };
+    const tryReveal = force => {
+      if (force || (video.readyState >= 2 && video.currentTime >= seekTo - 0.5)) reveal();
+    };
+    video.addEventListener('seeked', () => tryReveal(false), { once: true });
+    video.addEventListener('canplay', () => tryReveal(false), { once: true });
+    setTimeout(() => { if (video.readyState >= 2) tryReveal(true); }, 350); // safety net
+    release();
+  });
+}
+
+function hidePreview(card) {
+  delete card.dataset.previewOn;
+  card.classList.remove('previewing', 'preview-live');
+  const video = card.querySelector('.card-preview');
+  if (video) {
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+    video.remove();
+  }
+}
+
+// Preview the hovered card plus the next 3 cards together (4 at once), so the
+// grid feeds live previews while scanning instead of static thumbnails.
+function previewCluster(card) {
+  document.querySelectorAll('.previewing').forEach(c => hidePreview(c));
+  const ids = [card];
+  let sib = card.nextElementSibling;
+  while (sib && ids.length < 4) {
+    if (sib.matches && sib.matches('.tube-card,.card-mini,.list-card')) ids.push(sib);
+    sib = sib.nextElementSibling;
+  }
+  ids.forEach(c => {
+    const v = videoById[c.dataset.id];
+    if (v) showPreview(c, v);
+  });
+}
+
+const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
+let touchPreviewObserver = null;
+
+function attachPreviews() {
+  const feed = document.getElementById('videoFeed');
+  if (!feed) return;
+  initPrefetchObserver(feed);
+  if (!feed.dataset.previewCleanup) {
+    feed.dataset.previewCleanup = '1';
+    feed.addEventListener('mouseleave', () => {
+      document.querySelectorAll('.previewing').forEach(c => hidePreview(c));
+    });
+  }
+  // Touch devices: no hover — auto-preview the cards nearest the viewport via
+  // IntersectionObserver, plus finger long-press for deliberate holds.
+  if (IS_TOUCH) {
+    attachTouchPreviews();
+    warmAutoplay();
+    return;
+  }
+  feed.querySelectorAll('.tube-card,.card-mini,.list-card').forEach(card => {
+    if (card.dataset.previewBound) return;
+    card.dataset.previewBound = '1';
+    card.addEventListener('mouseenter', () => previewCluster(card));
+    card.addEventListener('mouseleave', () => hidePreview(card));
+  });
+  // Featured carousel cards (server-rendered once)
+  const track = document.getElementById('featCarTrack');
+  if (track) {
+    track.querySelectorAll('.feat-car-card').forEach(card => {
+      if (card.dataset.previewBound) return;
+      card.dataset.previewBound = '1';
+      card.addEventListener('mouseenter', () => previewCluster(card));
+      card.addEventListener('mouseleave', () => hidePreview(card));
+    });
+  }
+}
+
+// ─── PREFETCH PIPELINE ───
+// Any card entering the rootMargin zone (well below the fold) gets its 12s-mark
+// chunk fetched into the cache before it is visible, so play starts the instant
+// the user scrolls to / hovers it — no "loading" gap mid-scroll.
+let prefetchObserver = null;
+let prefetchInflight = 0;
+const prefetchQueue = [];
+
+function initPrefetchObserver(feed) {
+  if (!prefetchObserver) {
+    prefetchObserver = new IntersectionObserver(entries => {
+      entries.forEach(en => { if (en.isIntersecting) schedulePrefetch(en.target); });
+    }, { rootMargin: PREFETCH_MARGIN });
+  }
+  feed.querySelectorAll('.tube-card,.card-mini,.list-card,.feat-car-card').forEach(card => {
+    if (!card.dataset.prefetched) prefetchObserver.observe(card);
+  });
+}
+
+function schedulePrefetch(card) {
+  const v = videoById[card.dataset.id];
+  if (!v || previewCache[v.id] || CONNECTION_SPEED === 'slow') return;
+  card.dataset.prefetched = '1';
+  prefetchQueue.push(v);
+  pumpPrefetch();
+}
+
+function pumpPrefetch() {
+  while (prefetchInflight < MAX_PREFETCH_INFLIGHT && prefetchQueue.length) {
+    const v = prefetchQueue.shift();
+    prefetchInflight++;
+    const p = prefetchPreview(v);
+    if (!p) { prefetchInflight--; continue; }
+    p.then(() => { prefetchInflight--; pumpPrefetch(); }, () => { prefetchInflight--; pumpPrefetch(); });
+  }
+}
+
+// Touch: auto-preview the in-viewport cards (up to 5) via IntersectionObserver
+// AND let a finger long-press ("finger hover") pin a cluster, so deliberate
+// holds always get a preview even mid-scroll.
+let pressTimer = null;
+let pressCard = null;
+
+function attachTouchPreviews() {
+  const feed = document.getElementById('videoFeed');
+  if (!feed) return;
+  if (touchPreviewObserver) touchPreviewObserver.disconnect();
+  const visible = [];
+  touchPreviewObserver = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      const card = en.target;
+      const idx = visible.indexOf(card);
+      if (en.isIntersecting) {
+        if (idx < 0) visible.push(card);
+      } else {
+        if (idx >= 0) visible.splice(idx, 1);
+        hidePreview(card);
+      }
+    });
+    // Visual order on screen = DOM order for a scroll column
+    visible.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
+    visible.forEach((card, i) => {
+      if (i < MAX_CONCURRENT_PREVIEWS) {
+        const v = videoById[card.dataset.id];
+        if (v) showPreview(card, v);
+      } else {
+        hidePreview(card);
+      }
+    });
+  }, { threshold: 0.2 });
+  feed.querySelectorAll('.tube-card,.card-mini,.list-card').forEach(card => {
+    touchPreviewObserver.observe(card);
+    bindFingerHover(card);
+  });
+}
+
+// Finger hover: a 400ms press pins that card's cluster and silences the
+// auto-preview noise so the user controls exactly what plays.
+function bindFingerHover(card) {
+  if (card.dataset.fingerBound) return;
+  card.dataset.fingerBound = '1';
+  const start = e => {
+    if (e.pointerType && e.pointerType !== 'touch') return;
+    clearPress();
+    pressCard = card;
+    pressTimer = setTimeout(() => {
+      if (!card.isConnected) return;
+      document.querySelectorAll('.previewing').forEach(c => { if (c !== card) hidePreview(c); });
+      previewCluster(card);
+    }, 400);
+  };
+  const cancel = () => { if (pressCard === card) clearPress(); };
+  card.addEventListener('pointerdown', start, { passive: true });
+  card.addEventListener('pointerup', cancel, { passive: true });
+  card.addEventListener('pointercancel', cancel, { passive: true });
+  card.addEventListener('touchmove', cancel, { passive: true });
+}
+
+function clearPress() { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } pressCard = null; }
+
+// Browsers block autoplay until the first user gesture; a single tap anywhere
+// unlocks all preview <video>s so the next auto-preview actually plays.
+function warmAutoplay() {
+  const unlock = () => {
+    document.querySelectorAll('.card-preview-live').forEach(v => { try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} });
+  };
+  document.addEventListener('touchstart', unlock, { once: true, passive: true });
+  document.addEventListener('click', unlock, { once: true });
+}
+
+// ─── SEARCH ───
+function applySearch(q) {
+  const feed = document.getElementById('videoFeed');
+  const noRes = document.getElementById('noResults');
+  if (!feed) return;
+  if (!q) {
+    render(allVideos);
+    if (noRes) noRes.style.display = 'none';
+    return;
+  }
+  const filtered = allVideos.filter(v =>
+    (v.title || '').toLowerCase().includes(q) ||
+    (v.category || '').toLowerCase().includes(q) ||
+    (v.tags || []).some(t => t.toLowerCase().includes(q)) ||
+    (v.description || '').toLowerCase().includes(q)
+  );
+  if (filtered.length) {
+    render(filtered);
+    if (noRes) noRes.style.display = 'none';
+  } else {
+    feed.innerHTML = '';
+    if (noRes) noRes.style.display = 'block';
+  }
+}
+let searchTimer;
+document.getElementById('searchInput')?.addEventListener('input', function(e) {
+  clearTimeout(searchTimer);
+  const q = e.target.value.toLowerCase().trim();
+  searchTimer = setTimeout(() => applySearch(q), 300);
+});
+// Deep-link search (?q=) so the SearchAction sitelink box works
+const urlQ = new URLSearchParams(location.search).get('q');
+if (urlQ) {
+  const input = document.getElementById('searchInput');
+  if (input) input.value = urlQ;
+  applySearch(urlQ.toLowerCase().trim());
+}
+
+// ─── FEATURED CAROUSEL ───
+(function initFeatCarousel() {
+  if (!featuredVideos || featuredVideos.length < 3) return;
+  const track = document.getElementById('featCarTrack');
+  const dots = document.getElementById('featCarDots');
+  if (!track || !dots) return;
+
+  function perView() {
+    const w = window.innerWidth || document.documentElement.clientWidth;
+    return w <= 768 ? 1 : w <= 1200 ? 2 : 3;
+  }
+  function featPages() { return Math.max(1, Math.ceil(featuredVideos.length / perView())); }
+
+  function buildDots() {
+    const pages = featPages();
+    dots.innerHTML = Array.from({ length: pages }, (_, i) =>
+      '<div class="feat-car-dot' + (i === 0 ? ' active' : '') + '" onclick="goToFeatSlide(' + i + ')"></div>'
+    );
+  }
+  buildDots();
+
+  function update() {
+    const card = track.querySelector('.feat-car-card');
+    if (!card) return;
+    const w = card.offsetWidth || 0;
+    const gap = 16;
+    const pv = perView();
+    const pages = featPages();
+    if (state.featIdx > pages - 1) state.featIdx = pages - 1;
+    const pageWidth = pv * w + (pv - 1) * gap;
+    track.style.transform = 'translateX(-' + (state.featIdx * pageWidth) + 'px)';
+    dots.querySelectorAll('.feat-car-dot').forEach((d, i) => d.classList.toggle('active', i === state.featIdx));
+  }
+
+  window.goToFeatSlide = function(idx) {
+    state.featIdx = idx;
+    update();
+    if (state.featInterval) clearInterval(state.featInterval);
+    if (state.featPlaying) startFeatCarousel();
+  };
+
+  function startFeatCarousel() {
+    if (state.featInterval) clearInterval(state.featInterval);
+    state.featInterval = setInterval(() => {
+      state.featIdx = (state.featIdx + 1) % featPages();
+      update();
+    }, 5000);
+  }
+
+  window.toggleFeatCarousel = function() {
+    state.featPlaying = !state.featPlaying;
+    document.getElementById('featPlayPauseBtn').textContent = state.featPlaying ? '\u23F8\uFE0F' : '\u25B6\uFE0F';
+    if (state.featPlaying) startFeatCarousel();
+    else if (state.featInterval) clearInterval(state.featInterval);
+  };
+
+  // Touch support
+  let touchStartX = 0;
+  const container = document.querySelector('.feat-car-container');
+  if (container) {
+    container.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    container.addEventListener('touchend', e => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) state.featIdx = Math.min(state.featIdx + 1, featPages() - 1);
+        else state.featIdx = Math.max(state.featIdx - 1, 0);
+        update();
+        if (state.featPlaying) startFeatCarousel();
+      }
+    }, { passive: true });
+  }
+
+  startFeatCarousel();
+  // Recalc on resize (per-view count + dots change with breakpoints)
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { buildDots(); update(); }, 200);
+  });
+})();
+
+// ─── INIT ───
+(function initFeed() {
+  const feed = document.getElementById('videoFeed');
+  if (!feed) return;
+  const seeded = feed.querySelectorAll('.tube-card');
+  if (!seeded.length) { render(allVideos); return; }
+
+  // Server already painted the first cards (instant, no skeleton flash). Build
+  // the remaining sections below them instead of wiping and re-rendering.
+  const have = new Set(Array.from(seeded).map(c => c.dataset.id));
+  const rest = (allVideos || []).filter(v => !have.has(v.id));
+  requestAnimationFrame(() => {
+    feed.insertAdjacentHTML('beforeend', buildFeed(rest));
+    attachPreviews();
+  });
+})();
+
+// ─── MOBILE NAV: hamburger toggles the drawer, tap "Categories" expands it ───
+function initMobileNav() {
+  const toggle = document.getElementById('navToggle');
+  const nav = document.getElementById('navMenu');
+  if (toggle && nav) {
+    toggle.addEventListener('click', function() {
+      const open = nav.classList.toggle('open');
+      toggle.classList.toggle('active', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      toggle.innerHTML = open ? '\u2715' : '\u2630';
+    });
+  }
+  document.querySelector('.nav-dropdown')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+    this.classList.toggle('open');
+  });
+  document.addEventListener('click', function() {
+    document.querySelectorAll('.nav-dropdown.open').forEach(d => d.classList.remove('open'));
+  });
+  document.querySelector('.dropdown-menu')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+}
+initMobileNav();
+</script>
+
+<%- include('age-notice') %>
+</body>
+</html>

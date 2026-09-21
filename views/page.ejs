@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="rating" content="RTA-5042-1996-1400-1577-RTA" />
+<%- include('partials/analytics') %><%- seoMeta || '' %>
+<% if (!seoMeta) { %><link rel="canonical" href="<%= canonicalUrl || siteUrl || 'https://superxlatina.com' %>"><% } %>
+<link rel="stylesheet" href="/css/style.css?v=7">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="top-bar">
+  <div class="container top-bar-inner">
+    <a href="/" class="logo">Super X Latina</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">&#x2630;</button>
+    <nav class="nav" id="navMenu">
+      <a href="/">Home</a>
+      <% if (categories && categories.length) { %>
+        <div class="nav-dropdown">
+          <a href="#">Categories &#x25BE;</a>
+          <div class="dropdown-menu">
+            <% categories.forEach(function(c) { %>
+              <a href="/category/<%= encodeURIComponent(c.toLowerCase()) %>"><%= c %></a>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+      <a href="/about">About</a>
+    </nav>
+  </div>
+</div>
+<main class="container page-content">
+  <%- content %>
+</main>
+<footer class="footer">
+  <div class="container footer-inner">
+    <p> Super X Latina — Premium HD latina video collection</p>
+    <nav>
+      <a href="/">Home</a> <a href="/about">About</a> <a href="/dmca">DMCA</a> <a href="/terms">Terms</a> <a href="/2257">2257</a>
+      <a href="/privacy-policy">Privacy Policy</a> <a href="/contact">Contact</a> <a href="/faq">FAQ</a>
+      <a href="https://xmelayu.site">xMelayu</a> <a href="https://superxhentai.com">Super X Hentai</a>
+    </nav>
+  </div>
+</footer>
+
+<%- include('age-notice') %>
+
+<script>
+// ─── MOBILE NAV ───
+(function(){
+  var toggle = document.getElementById('navToggle');
+  var nav = document.getElementById('navMenu');
+  if (toggle && nav) {
+    toggle.addEventListener('click', function(){
+      var open = nav.classList.toggle('open');
+      toggle.classList.toggle('active', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      toggle.innerHTML = open ? '\u2715' : '\u2630';
+    });
+  }
+  document.querySelector('.nav-dropdown')?.addEventListener('click', function(e){
+    e.stopPropagation();
+    this.classList.toggle('open');
+  });
+  document.addEventListener('click', function(){
+    document.querySelectorAll('.nav-dropdown.open').forEach(function(d){ d.classList.remove('open'); });
+  });
+  document.querySelector('.dropdown-menu')?.addEventListener('click', function(e){
+    e.stopPropagation();
+  });
+})();
+</script>
+</body>
+</html>

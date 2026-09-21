@@ -1,0 +1,78 @@
+{
+  "videoFolders": [
+    "C:\\Users\\User\\Desktop\\hentai_videos"
+  ],
+  "thumbnailsFolder": "C:\\thumbnails",
+  "port": 7007,
+  "adminPassword": "Desktop123",
+  "tokenSecret": "d8dfc414393568fcb51ccb0ceebb1399fb8375cc0df4a421a775f5a0ca64eaa2",
+  "siteName": "Super X Hentai",
+  "siteUrl": "https://superxhentai.com",
+  "externalSync": false,
+  "adminName": "Super X Hentai Admin",
+  "adminBio": "Hentai curator, HD streaming, 24/7 uploads.",
+  "adminPhoto": "",
+  "contactEmail": "admin@superxhentai.com",
+  "adminSocial": {
+    "twitter": "",
+    "instagram": "",
+    "tiktok": ""
+  },
+  "scanIntervalMinutes": 0,
+  "trustedIps": [],
+  "browser": {
+    "enabled": true,
+    "fallback": true,
+    "timeoutMs": 45000,
+    "waitMs": 6000,
+    "maxConcurrent": 2,
+    "maxRenders": 60,
+    "headless": true
+  },
+  "transformer": {
+    "enabled": true,
+    "allowAnyHost": true,
+    "blockedHosts": [],
+    "referer": "",
+    "hostReferers": {
+      "1porn.tv": "https://www.1porn.tv/",
+      "www.1porn.tv": "https://www.1porn.tv/",
+      "xhamster.com": "https://xhamster.com/",
+      "video-nss.xhcdn.com": "https://xhamster.com/",
+      "xvideos.com": "https://www.xvideos.com/",
+      "www.xvideos.com": "https://www.xvideos.com/",
+      "newsexwap.com": "https://newsexwap.com/",
+      "www.newsexwap.com": "https://newsexwap.com/"
+    },
+    "resolveTtlMs": 21600000
+  },
+  "seo": {
+    "niche": "hentai",
+    "identity": "Hentai Videos",
+    "tagline": "Watch HD hentai videos free",
+    "homeTitle": "Super X Hentai — Free HD Hentai & Uncensored Anime Porn",
+    "homeDescription": "Watch free hentai videos in HD 1080p. Stream uncensored anime porn, hot hentai scenes & more — new videos added daily. No sign-up, no paywall. 100% free.",
+    "homeKeywords": "hentai, hentai videos, hentai HD, watch hentai free, anime porn, superxhentai, uncensored hentai streaming",
+    "author": "Super X Hentai",
+    "twitter": "@superxhentai",
+    "rssEnabled": true,
+    "faq": [
+      {
+        "q": "What is Super X Hentai?",
+        "a": "Super X Hentai is a curated hentai and anime video collection with HD streaming and daily updates."
+      },
+      {
+        "q": "Is Super X Hentai free?",
+        "a": "Yes, all videos on Super X Hentai are free to watch online."
+      },
+      {
+        "q": "Is the content uncensored?",
+        "a": "We curate both censored and uncensored hentai depending on the source."
+      },
+      {
+        "q": "How often is content added?",
+        "a": "New videos are added regularly to keep the collection fresh."
+      }
+    ]
+  }
+}

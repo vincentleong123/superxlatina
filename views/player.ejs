@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="rating" content="RTA-5042-1996-1400-1577-RTA" />
+<%- include('partials/analytics') %><%- seoMeta %>
+<link rel="stylesheet" href="/css/style.css?v=19">
+<script src="/js/hls.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+.seo-poster{width:160px;height:90px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.08);display:block;margin:0 0 12px}
+.video-card .thumb{position:relative;overflow:hidden}
+.card-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:3;pointer-events:none;background:#111;opacity:0;visibility:hidden;transition:opacity .15s ease}
+.card-preview.card-preview-live{opacity:1;visibility:visible}
+.video-card.preview-live .play-overlay{opacity:0!important}
+.video-card.preview-live .thumb img{opacity:0}
+.video-card .dur{z-index:4}
+</style>
+</head>
+<body>
+<div class="top-bar">
+  <div class="container top-bar-inner">
+    <a href="/" class="logo">Super X Latina</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">&#x2630;</button>
+    <nav class="nav" id="navMenu">
+      <a href="/">Home</a>
+      <% if (categories && categories.length) { %>
+        <div class="nav-dropdown">
+          <a href="#">Categories &#x25BE;</a>
+          <div class="dropdown-menu">
+            <% categories.forEach(function(c) { %>
+              <a href="/category/<%= encodeURIComponent(c.toLowerCase()) %>"><%= c %></a>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+      <a href="/about">About</a>
+    </nav>
+  </div>
+</div>
+
+<main class="container player-page">
+  <a href="/" class="back-link">&#x2190; Back to all videos</a>
+
+  <div class="player-wrapper">
+    <!-- WPS Transformer player (ported into Super X Latina) — custom controls,
+         scrub previews, speed/quality switching, silent autoplay + perceived-speed UI -->
+    <div class="wps-player"
+         data-src="<%= playbackUrl || video.video || ('/videos/' + video.id + '.mp4') %>"
+         data-poster="<%= videoThumb || video.thumbnail || ('/thumbnails/' + video.id + '.jpg') %>"
+         data-autoplay-next="<%= nextVideo ? '1' : '0' %>"
+         data-preroll="0"
+         data-preview="<%= videoPreview || video.preview || '' %>"
+         data-next="<%= nextVideo ? '/' + nextVideo.id : '' %>"
+         data-next-title="<%= nextVideo ? nextVideo.title : '' %>">
+      <video id="wpsVideo" playsinline autoplay muted preload="metadata" poster="<%= videoThumb || video.thumbnail || ('/thumbnails/' + video.id + '.jpg') %>"></video>
+      <div class="wps-poster wps-skeleton" style="background-image:url('<%= videoThumb || video.thumbnail || ('/thumbnails/' + video.id + '.jpg') %>')"></div>
+      <div class="wps-center"><button class="wps-big-play" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button></div>
+      <div class="wps-loader"><div class="wps-loader-ring"></div><span class="wps-loader-pct"></span></div>
+      <video class="wps-preview-video" preload="metadata" muted playsinline></video>
+      <div class="wps-intro-mask" aria-hidden="true"></div>
+      <div class="wps-controls">
+        <div class="wps-progress-wrap">
+          <div class="wps-preview-bubble"><div class="wps-preview-img"></div><canvas class="wps-preview-canvas" width="160" height="90"></canvas><span class="wps-preview-time">0:00</span></div>
+          <div class="wps-progress">
+            <div class="wps-buffered"></div>
+            <div class="wps-played"></div>
+            <div class="wps-thumb"></div>
+          </div>
+        </div>
+        <div class="wps-buttons">
+          <button class="wps-btn" data-act="play" aria-label="Play/Pause"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+          <button class="wps-btn small" data-act="rewind">-10</button>
+          <button class="wps-btn small" data-act="forward">+10</button>
+          <span class="wps-time">0:00 / 0:00</span>
+          <span class="wps-spacer"></span>
+          <div class="wps-volume">
+            <button class="wps-btn" data-act="mute" aria-label="Mute"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05A4.5 4.5 0 0 0 16.5 12z"/></svg></button>
+            <input type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume">
+          </div>
+          <div class="wps-menu-wrap">
+            <button class="wps-btn small" data-act="speed">1x</button>
+            <div class="wps-menu" data-menu="speed"></div>
+          </div>
+          <div class="wps-menu-wrap">
+            <button class="wps-btn small" data-act="quality">Auto</button>
+            <div class="wps-menu" data-menu="quality"></div>
+          </div>
+          <button class="wps-btn" data-act="pip" aria-label="Picture in Picture"><svg viewBox="0 0 24 24"><path d="M19 7h-8v6h8V7zm2 9H3V5h18v11zM1 3h22v15H1V3z"/></svg></button>
+          <button class="wps-btn" data-act="fs" aria-label="Fullscreen"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></button>
+        </div>
+      </div>
+      <div class="wps-ad"><div class="wps-ad-badge">AD</div><div class="wps-ad-skip"></div></div>
+    </div>
+
+    <% if (prevVideo) { %>
+    <a href="/<%= prevVideo.id %>" class="nav-btn nav-prev" id="navPrev" aria-label="Previous video">
+      <svg viewBox="0 0 24 24"><path d="M15.5 4.5l-8 7.5 8 7.5z"/></svg>
+    </a>
+    <% } %>
+    <% if (nextVideo) { %>
+    <a href="/<%= nextVideo.id %>" class="nav-btn nav-next" id="navNext" aria-label="Next video">
+      <svg class="nav-ring" viewBox="0 0 46 46"><circle class="nav-ring-bg" cx="23" cy="23" r="20"></circle><circle class="nav-ring-fg" cx="23" cy="23" r="20"></circle></svg>
+      <span class="nav-next-tag">NEXT</span>
+      <span class="nav-count" id="navNextCount"></span>
+      <svg class="nav-next-arrow" viewBox="0 0 24 24"><path d="M8.5 4.5l8 7.5-8 7.5z"/></svg>
+    </a>
+    <% } %>
+  </div>
+
+  <div class="video-info">
+    <img src="<%= videoThumb || video.thumbnail || '/thumbnails/' + video.id + '.jpg' %>" class="seo-poster" alt="<%= displayTitle || video.title %>" title="<%= displayTitle || video.title %>" fetchpriority="high">
+    <h1 class="video-title"><%= seoH1 || displayTitle || video.title %></h1>
+    <% if (displayTitle && displayTitle !== (seoH1 || '')) { %><h2 class="video-h2"><%= displayTitle %></h2><% } %>
+    <div class="video-meta">
+      <span id="viewCount">&#x1F4E1; <%= video.views || 0 %> views</span>
+      <span>&#x1F4C5; <%= new Date(video.uploaded).toLocaleDateString('en-MY', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+      <% if (video.category) { %><a href="/category/<%= encodeURIComponent(video.category.toLowerCase()) %>" class="cat-badge"><%= video.category %></a><% } %>
+    </div>
+    <div class="video-actions">
+      <button class="like-btn" id="likeBtn" onclick="likeVideo('<%= video.id %>')">
+        &#x2764; <span id="like-count"><%= likeCount %></span>
+      </button>
+      <button class="share-btn" onclick="shareVideo()">&#x1F517; Share</button>
+    </div>
+  </div>
+
+  <div class="video-description">
+    <%- videoDescription %>
+    <p style="margin-top:12px;font-size:13px;color:#9ca3af"> Super X Latina — Premium HD latina video collection. Browse more content!</p>
+  </div>
+
+  <% if (keywords && keywords.length) { %>
+    <div class="tags">
+      <% keywords.forEach(function(k) { %>
+        <a href="/k/<%= encodeURIComponent(k.toLowerCase()) %>" class="tag">#<%= k %></a>
+      <% }); %>
+    </div>
+  <% } %>
+
+  <section class="section related-section">
+    <div class="section-header">
+      <h2 class="section-title">📹 More Videos</h2>
+      <a href="/" class="section-link">Browse all &#x2192;</a>
+    </div>
+    <div class="video-grid">
+      <% relatedVideos.forEach(function(v) { %>
+        <a href="/<%= v.id %>" class="video-card fade-in-delay" data-id="<%= v.id %>">
+          <div class="thumb">
+            <img src="<%= v.thumbnail || '/thumbnails/' + v.id + '.jpg' %>" alt="<%= v.title %>" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'skeleton-thumb\'></div>'">
+            <div class="play-overlay"><span class="play-icon">&#x25B6;</span></div>
+            <span class="dur"><%= v.duration || '0:30' %></span>
+          </div>
+          <div class="card-body">
+            <h3><%= v.title %></h3>
+            <span class="views">&#x1F4E1; <%= v.views || 0 %></span>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  </section>
+</main>
+
+<div class="share-toast" id="shareToast">Link copied to clipboard!</div>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <div class="logo">Super X Latina</div>
+      <p>Super X Latina — Premium HD latina video collection. New content daily.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Browse</h4>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/about">About Super X Latina</a>
+        <% if (video.category) { %><a href="/category/<%= encodeURIComponent(video.category.toLowerCase()) %>">More <%= video.category %> Latina Videos</a><% } %>
+      </nav>
+    </div>
+    <div class="footer-links">
+      <h4>Legal</h4>
+      <nav>
+        <a href="/dmca">DMCA</a>
+        <a href="/terms">Terms</a>
+        <a href="/2257">2257</a>
+        <a href="/privacy-policy">Privacy Policy</a>
+        <a href="/contact">Contact</a>
+        <a href="/faq">FAQ</a>
+      </nav>
+    </div>
+    <div class="footer-links">
+      <h4>Network</h4>
+      <nav>
+        <a href="https://xmelayu.site">xMelayu — Southeast Asian Amateur Videos</a>
+        <a href="https://superxhentai.com">Super X Hentai — HD Hentai Videos</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p> Super X Latina — Free HD Latina Streaming</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+fetch('/api/view/<%= video.id %>', {method:'POST'}).then(function(r){return r.json()}).then(function(d){if(d.views!==undefined){var el=document.getElementById('viewCount');if(el)el.innerHTML='&#x1F4E1; '+d.views.toLocaleString()+' views';}}).catch(function(){});
+
+function likeVideo(id) {
+  fetch('/api/like/' + id, { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      document.getElementById('like-count').textContent = d.likes;
+      var btn = document.getElementById('likeBtn');
+      if (d.liked) { btn.classList.add('liked'); } else { btn.classList.remove('liked'); }
+    });
+}
+
+function shareVideo() {
+  var url = window.location.href;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function() {
+      showToast('Link copied to clipboard!');
+    });
+  } else {
+    showToast(url);
+  }
+}
+
+function showToast(msg) {
+  var t = document.getElementById('shareToast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+// ─── PREV/NEXT: prefetch, swipe (silent autoplay is baked into the <video>);
+// ─── keyboard + auto-next ring live here (uses #wpsVideo, not a dead selector) ───
+(function() {
+  var prevLink = document.getElementById('navPrev');
+  var nextLink = document.getElementById('navNext');
+  var video = document.getElementById('wpsVideo');
+
+  function prefetch(href) {
+    if (!href) return;
+    try {
+      var l = document.createElement('link');
+      l.rel = 'prefetch'; l.href = href;
+      document.head.appendChild(l);
+    } catch (e) {}
+  }
+  prefetch(prevLink && prevLink.getAttribute('href'));
+  prefetch(nextLink && nextLink.getAttribute('href'));
+
+  var wrapper = document.querySelector('.player-wrapper');
+  var touchX = 0;
+  if (wrapper) {
+    wrapper.addEventListener('touchstart', function(e) { touchX = e.touches[0].clientX; }, { passive: true });
+    wrapper.addEventListener('touchend', function(e) {
+      var diff = touchX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 60) {
+        if (diff > 0 && nextLink) window.location.href = nextLink.getAttribute('href');
+        else if (diff < 0 && prevLink) window.location.href = prevLink.getAttribute('href');
+      }
+    }, { passive: true });
+  }
+
+  // ─── AUTO-NEXT: 6s countdown after the video ends, then auto-advance ───
+  var AUTO_NEXT_SECS = 6;
+  var autoTimer = null;
+  var autoRemaining = 0;
+  var countEl = document.getElementById('navNextCount');
+
+  function clearAutoNext() {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    autoRemaining = 0;
+    if (countEl) countEl.textContent = '';
+    if (nextLink) nextLink.classList.remove('counting');
+  }
+
+  function startAutoNext() {
+    if (!nextLink) return;
+    clearAutoNext();
+    autoRemaining = AUTO_NEXT_SECS;
+    if (countEl) countEl.textContent = String(autoRemaining);
+    nextLink.classList.add('counting');
+    autoTimer = setInterval(function() {
+      autoRemaining--;
+      if (autoRemaining <= 0) {
+        clearInterval(autoTimer); autoTimer = null;
+        if (countEl) countEl.textContent = '';
+        nextLink.classList.remove('counting');
+        var href = nextLink.getAttribute('href');
+        if (href) window.location.href = href;
+        return;
+      }
+      if (countEl) countEl.textContent = String(autoRemaining);
+    }, 1000);
+  }
+
+  if (video) {
+    video.addEventListener('ended', function(){ if (video.getAttribute('data-intro') === '1') return; startAutoNext(); });
+    video.addEventListener('play', clearAutoNext);
+    video.addEventListener('playing', clearAutoNext);
+    video.addEventListener('seeked', function() {
+      if (autoTimer && video.currentTime < (video.duration || Infinity) - 0.5) clearAutoNext();
+    });
+  }
+  if (nextLink) nextLink.addEventListener('click', clearAutoNext);
+  if (prevLink) prevLink.addEventListener('click', clearAutoNext);
+})();
+</script>
+
+<script>
+/* Hover video preview on related cards — same engine & style as the home gallery */
+(function(){
+  var videoById = {};
+    <% relatedVideos.forEach(function(v){ %>videoById[<%- JSON.stringify(v.id) %>] = <%- JSON.stringify({ id: v.id, video: v.video, size: v.size, dur: v.dur, pv: v.pv, preview: v.preview }) %>;
+<% }); %>
+
+  var MAX_CONCURRENT_PREVIEWS = ('ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0) ? 4 : 6;
+  var MAX_PREFETCH_INFLIGHT = 6;
+  var MAX_CACHE_BYTES = 48 * 1024 * 1024;
+  var PREFETCH_MARGIN = '0px 0px 600% 0px';
+  var previewState = { active: 0, queue: [] };
+  var previewCache = {};
+  var previewCacheOrder = [];
+  var previewFetching = {};
+  var previewCacheBytes = 0;
+
+  function detectConnectionSpeed() {
+    if (navigator.connection && navigator.connection.effectiveType) {
+      var t = navigator.connection.effectiveType;
+      if (t === 'slow-2g' || t === '2g') return 'slow';
+      if (t === '3g') return 'medium';
+    }
+    return 'fast';
+  }
+  var CONNECTION_SPEED = detectConnectionSpeed();
+
+  function previewRange(v) {
+    var cap = CONNECTION_SPEED === 'fast' ? 6291456 : CONNECTION_SPEED === 'medium' ? 4194304 : 2097152;
+    if (v && v.size && v.dur) {
+      var pv = v.pv || Math.round((12 / v.dur) * v.size);
+      var end = Math.round(pv * 1.6);
+      end = Math.max(end, Math.min(1048576, v.size - 1));
+      end = Math.min(end, cap, v.size - 1);
+      return { start: 0, end: end };
+    }
+    return { start: 0, end: Math.min(cap, 5242880) };
+  }
+
+  function getPreviewTime(v) {
+    if (v && v.dur && v.dur < 12) return Math.max(0.03, Math.floor(v.dur * 0.3));
+    return 12;
+  }
+
+  function cachePreviewUrl(id, url, bytes) {
+    if (previewCache[id]) { URL.revokeObjectURL(previewCache[id].url); previewCacheBytes -= previewCache[id].bytes; }
+    previewCache[id] = { url: url, bytes: bytes || 0 };
+    previewCacheBytes += bytes || 0;
+    var ix = previewCacheOrder.indexOf(id);
+    if (ix >= 0) previewCacheOrder.splice(ix, 1);
+    previewCacheOrder.push(id);
+    while (previewCacheBytes > MAX_CACHE_BYTES && previewCacheOrder.length) {
+      var oldest = previewCacheOrder.shift();
+      if (oldest && previewCache[oldest]) {
+        previewCacheBytes -= previewCache[oldest].bytes;
+        URL.revokeObjectURL(previewCache[oldest].url);
+        delete previewCache[oldest];
+      }
+    }
+  }
+
+  function prefetchPreview(v) {
+    if (!v) return null;
+    if (previewCache[v.id]) return Promise.resolve(previewCache[v.id].url);
+    if (previewFetching[v.id]) return previewFetching[v.id];
+    var r = previewRange(v);
+    var src = v.preview || v.video;
+    var init = v.preview ? {} : { headers: { Range: 'bytes=' + r.start + '-' + r.end } };
+    var p = fetch(src, init)
+      .then(function(res){ return (res.ok && res.status !== 416) ? res.blob() : Promise.reject(new Error('range')); })
+      .then(function(blob){
+        if (!blob.size) throw new Error('empty');
+        var url = URL.createObjectURL(blob);
+        cachePreviewUrl(v.id, url, blob.size);
+        return url;
+      });
+    previewFetching[v.id] = p;
+    p.then(function(){ delete previewFetching[v.id]; }, function(){ delete previewFetching[v.id]; });
+    return p;
+  }
+
+  function loadPreviewBlob(v, cb) {
+    var p = prefetchPreview(v);
+    if (p) p.then(function(url){ cb(url); });
+    else cb(null);
+  }
+
+  function showPreview(card, v) {
+    if (card.querySelector('.card-preview')) return;
+    card.dataset.previewOn = '1';
+    if (CONNECTION_SPEED === 'slow') return;
+    previewState.queue.push({ card: card, v: v });
+    drainPreviewQueue();
+  }
+
+  function drainPreviewQueue() {
+    while (previewState.active < MAX_CONCURRENT_PREVIEWS && previewState.queue.length) {
+      var item = previewState.queue.shift();
+      if (item.card && item.card.isConnected && item.card.dataset.previewOn) {
+        startPreview(item.card, item.v);
+      }
+    }
+  }
+
+  function startPreview(card, v) {
+    previewState.active++;
+    var thumb = card.querySelector('.thumb');
+    var release = function(){ previewState.active--; drainPreviewQueue(); };
+    if (!thumb) return release();
+    var video = document.createElement('video');
+    video.className = 'card-preview';
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    thumb.appendChild(video);
+    card.classList.add('previewing');
+    loadPreviewBlob(v, function(url){
+      if (!url) { if (video.isConnected) video.remove(); card.classList.remove('previewing'); return release(); }
+      if (!video.isConnected) { release(); return; }
+      video.src = url;
+      var seekTo = v.preview ? 0.5 : getPreviewTime(v);
+      video.addEventListener('loadedmetadata', function(){ try { video.currentTime = seekTo; } catch (e) {} }, { once: true });
+      var reveal = function(){
+        if (!video.isConnected) return;
+        video.classList.add('card-preview-live');
+        card.classList.add('preview-live');
+        try { var p = video.play(); if (p && p.catch) p.catch(function(){}); } catch (e) {}
+      };
+      var tryReveal = function(force){ if (force || (video.readyState >= 2 && video.currentTime >= seekTo - 0.5)) reveal(); };
+      video.addEventListener('seeked', function(){ tryReveal(false); }, { once: true });
+      video.addEventListener('canplay', function(){ tryReveal(false); }, { once: true });
+      setTimeout(function(){ if (video.readyState >= 2) tryReveal(true); }, 350);
+      release();
+    });
+  }
+
+  function hidePreview(card) {
+    delete card.dataset.previewOn;
+    card.classList.remove('previewing', 'preview-live');
+    var video = card.querySelector('.card-preview');
+    if (video) { video.pause(); video.removeAttribute('src'); video.load(); video.remove(); }
+  }
+
+  function previewCluster(card) {
+    document.querySelectorAll('.previewing').forEach(function(c){ hidePreview(c); });
+    var ids = [card];
+    var sib = card.nextElementSibling;
+    while (sib && ids.length < 4) {
+      if (sib.matches && sib.matches('.video-card')) ids.push(sib);
+      sib = sib.nextElementSibling;
+    }
+    ids.forEach(function(c){
+      var v = videoById[c.dataset.id];
+      if (v) showPreview(c, v);
+    });
+  }
+
+  var IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
+
+  var prefetchObserver = null;
+  var prefetchInflight = 0;
+  var prefetchQueue = [];
+
+  function initPrefetchObserver(grid) {
+    if (!prefetchObserver) {
+      prefetchObserver = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){ if (en.isIntersecting) schedulePrefetch(en.target); });
+      }, { rootMargin: PREFETCH_MARGIN });
+    }
+    grid.querySelectorAll('.video-card').forEach(function(card){
+      if (!card.dataset.prefetched) prefetchObserver.observe(card);
+    });
+  }
+
+  function schedulePrefetch(card) {
+    var v = videoById[card.dataset.id];
+    if (!v || previewCache[v.id] || CONNECTION_SPEED === 'slow') return;
+    card.dataset.prefetched = '1';
+    prefetchQueue.push(v);
+    pumpPrefetch();
+  }
+
+  function pumpPrefetch() {
+    while (prefetchInflight < MAX_PREFETCH_INFLIGHT && prefetchQueue.length) {
+      var v = prefetchQueue.shift();
+      prefetchInflight++;
+      var p = prefetchPreview(v);
+      if (!p) { prefetchInflight--; continue; }
+      p.then(function(){ prefetchInflight--; pumpPrefetch(); }, function(){ prefetchInflight--; pumpPrefetch(); });
+    }
+  }
+
+  var pressTimer = null;
+  var pressCard = null;
+  function clearPress() { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } pressCard = null; }
+
+  function bindFingerHover(card) {
+    if (card.dataset.fingerBound) return;
+    card.dataset.fingerBound = '1';
+    card.addEventListener('pointerdown', function(e){
+      if (e.pointerType && e.pointerType !== 'touch') return;
+      clearPress();
+      pressCard = card;
+      pressTimer = setTimeout(function(){
+        if (!card.isConnected) return;
+        document.querySelectorAll('.previewing').forEach(function(c){ if (c !== card) hidePreview(c); });
+        previewCluster(card);
+      }, 400);
+    }, { passive: true });
+    var cancel = function(){ if (pressCard === card) clearPress(); };
+    card.addEventListener('pointerup', cancel, { passive: true });
+    card.addEventListener('pointercancel', cancel, { passive: true });
+    card.addEventListener('touchmove', cancel, { passive: true });
+  }
+
+  function attachPreviews() {
+    var grid = document.querySelector('.related-section .video-grid');
+    if (!grid) return;
+    initPrefetchObserver(grid);
+    if (IS_TOUCH) { attachTouchPreviews(grid); return; }
+    grid.addEventListener('mouseleave', function(){
+      document.querySelectorAll('.previewing').forEach(function(c){ hidePreview(c); });
+    });
+    grid.querySelectorAll('.video-card').forEach(function(card){
+      if (card.dataset.previewBound) return;
+      card.dataset.previewBound = '1';
+      card.addEventListener('mouseenter', function(){ previewCluster(card); });
+      card.addEventListener('mouseleave', function(){ hidePreview(card); });
+    });
+  }
+
+  var touchPreviewObserver = null;
+  function attachTouchPreviews(grid) {
+    if (touchPreviewObserver) touchPreviewObserver.disconnect();
+    var visible = [];
+    touchPreviewObserver = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        var card = en.target;
+        var idx = visible.indexOf(card);
+        if (en.isIntersecting) { if (idx < 0) visible.push(card); }
+        else { if (idx >= 0) visible.splice(idx, 1); hidePreview(card); }
+      });
+      visible.sort(function(a,b){ return (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1; });
+      visible.forEach(function(card, i){
+        if (i < MAX_CONCURRENT_PREVIEWS) {
+          var v = videoById[card.dataset.id];
+          if (v) showPreview(card, v);
+        } else hidePreview(card);
+      });
+    }, { threshold: 0.2 });
+    grid.querySelectorAll('.video-card').forEach(function(card){
+      touchPreviewObserver.observe(card);
+      bindFingerHover(card);
+    });
+    var unlock = function(){
+      document.querySelectorAll('.card-preview-live').forEach(function(v){ try { var p = v.play(); if (p && p.catch) p.catch(function(){}); } catch (e) {} });
+    };
+    document.addEventListener('touchstart', unlock, { once: true, passive: true });
+    document.addEventListener('click', unlock, { once: true });
+  }
+
+  attachPreviews();
+})();
+</script>
+
+<script src="/js/wps-player.js?v=7"></script>
+
+<script>
+// ─── MOBILE NAV ───
+(function(){
+  var toggle = document.getElementById('navToggle');
+  var nav = document.getElementById('navMenu');
+  if (toggle && nav) {
+    toggle.addEventListener('click', function(){
+      var open = nav.classList.toggle('open');
+      toggle.classList.toggle('active', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      toggle.innerHTML = open ? '\u2715' : '\u2630';
+    });
+  }
+  document.querySelector('.nav-dropdown')?.addEventListener('click', function(e){
+    e.stopPropagation();
+    this.classList.toggle('open');
+  });
+  document.addEventListener('click', function(){
+    document.querySelectorAll('.nav-dropdown.open').forEach(function(d){ d.classList.remove('open'); });
+  });
+  document.querySelector('.dropdown-menu')?.addEventListener('click', function(e){
+    e.stopPropagation();
+  });
+})();
+</script>
+
+<%- include('age-notice') %>
+</body>
+</html>

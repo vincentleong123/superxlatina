@@ -1,0 +1,19 @@
+{
+  "name": "superxlatina",
+  "version": "1.0.0",
+  "description": "Super X Latina — Premium HD latina video collection",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google/genai": "^2.10.0",
+    "compression": "^1.8.1",
+    "compromise": "^14.15.1",
+    "cookie-parser": "^1.4.7",
+    "ejs": "^3.1.9",
+    "express": "^4.22.2",
+    "helmet": "^8.3.0",
+    "lokijs": "^1.5.12"
+  }
+}
