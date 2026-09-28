@@ -92,6 +92,20 @@ function renderMeta(o) {
   if (o.ogLocale) tags.push(`<meta property="og:locale" content="${esc(o.ogLocale)}">`);
   (o.ogLocaleAlternates || []).forEach(l => tags.push(`<meta property="og:locale:alternate" content="${esc(l)}">`));
 
+  // OG video — required for Facebook/social video cards and for Google to
+  // associate the page with a playable source. URLs must be absolute.
+  const ogVideo = abs(o.videoUrl);
+  if (ogVideo) {
+    tags.push(`<meta property="og:video:url" content="${esc(ogVideo)}">`);
+    tags.push(`<meta property="og:video:secure_url" content="${esc(o.videoSecureUrl || ogVideo)}">`);
+    tags.push(`<meta property="og:video:type" content="${esc(o.videoType || 'video/mp4')}">`);
+    if (o.videoWidth) tags.push(`<meta property="og:video:width" content="${esc(o.videoWidth)}">`);
+    if (o.videoHeight) tags.push(`<meta property="og:video:height" content="${esc(o.videoHeight)}">`);
+    const videoSecs = o.videoDuration ? durToSeconds(o.videoDuration) : 0;
+    if (videoSecs) tags.push(`<meta property="og:video:duration" content="${esc(videoSecs)}">`);
+    (o.videoTags || []).slice(0, 12).forEach(t => tags.push(`<meta property="og:video:tag" content="${esc(t)}">`));
+  }
+
   // Twitter
   tags.push(`<meta name="twitter:card" content="${esc(o.twitterCard || 'summary_large_image')}">`);
   if (o.twitterSite) tags.push(`<meta name="twitter:site" content="${esc(o.twitterSite)}">`);
@@ -114,6 +128,7 @@ function renderMeta(o) {
   if (o.rssUrl) tags.push(`<link rel="alternate" type="application/rss+xml" title="${esc(siteName + ' — New Videos')}" href="${esc(abs(o.rssUrl))}">`);
 
   // favicon + manifest
+  tags.push(`<meta name="theme-color" content="${esc(o.themeColor || '#120b08')}">`);
   tags.push(`<link rel="icon" type="image/svg+xml" href="/favicon.svg">`);
   tags.push(`<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">`);
   tags.push(`<link rel="icon" type="image/x-icon" href="/favicon.ico">`);
@@ -296,7 +311,7 @@ function durToIso(d) {
   return iso;
 }
 
-function videoSchema({ siteUrl, id, title, description, thumbnail, uploaded, duration, views, embedUrl, contentUrl, siteName }) {
+function videoSchema({ siteUrl, id, title, description, thumbnail, uploaded, duration, views, embedUrl, contentUrl, siteName, tags, category }) {
   const esc = (s) => String(s || '');
   return {
     '@context': 'https://schema.org',
@@ -309,6 +324,9 @@ function videoSchema({ siteUrl, id, title, description, thumbnail, uploaded, dur
     embedUrl: embedUrl || siteUrl + '/' + id,
     mainEntityOfPage: siteUrl + '/' + id,
     duration: durToIso(duration),
+    keywords: (tags && tags.length)
+      ? tags.slice(0, 12).join(', ')
+      : (category || undefined),
     interactionStatistic: views ? {
       '@type': 'InteractionCounter',
       interactionType: 'WatchAction',
@@ -360,7 +378,7 @@ function sitemapEntry(siteUrl, permalink, { updated, changefreq, priority } = {}
   return e;
 }
 
-function videoSitemapEntry(siteUrl, permalink, { title, description, thumbnail, duration, uploaded, contentLoc, playerLoc, familyFriendly = 'no' }) {
+function videoSitemapEntry(siteUrl, permalink, { title, description, thumbnail, duration, uploaded, contentLoc, playerLoc, familyFriendly = 'no', tags = [], category = '' }) {
   const escXml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const thumb = thumbnail && !/^https?:/.test(thumbnail) ? siteUrl + thumbnail : thumbnail;
   let e = `  <url>\n    <loc>${escXml(siteUrl + permalink)}</loc>\n`;
@@ -377,6 +395,10 @@ function videoSitemapEntry(siteUrl, permalink, { title, description, thumbnail, 
   const durSecs = durToSeconds(duration);
   if (durSecs) e += `      <video:duration>${durSecs}</video:duration>\n`;
   if (uploaded) e += `      <video:publication_date>${escXml(uploaded)}</video:publication_date>\n`;
+  if (category) e += `      <video:category>${escXml(String(category).substring(0, 80))}</video:category>\n`;
+  [...new Set((tags || []).map(t => String(t).trim()).filter(Boolean))]
+    .slice(0, 32)
+    .forEach(t => { e += `      <video:tag>${escXml(t.substring(0, 80))}</video:tag>\n`; });
   e += `      <video:family_friendly>${familyFriendly === 'yes' ? 'yes' : 'no'}</video:family_friendly>\n`;
   e += `      <video:requires_subscription>no</video:requires_subscription>\n    </video:video>\n  </url>`;
   return e;

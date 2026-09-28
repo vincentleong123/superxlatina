@@ -576,6 +576,27 @@ function healthyCategories() {
   return Object.keys(counts).filter(c => counts[c] >= MIN_CATEGORY_VIDEOS).sort((a, b) => counts[b] - counts[a]);
 }
 
+// Tag frequency map → fuels the /tags hub and its /k/:tag linkage.
+function tagCounts(min = 1) {
+  const m = {};
+  siteVideos.forEach(v => {
+    (v.tags || []).forEach(t => {
+      const k = String(t || '').toLowerCase().trim();
+      if (!k || k.length < 2 || k.length > 60 || /^\d+$/.test(k)) return;
+      m[k] = (m[k] || 0) + 1;
+    });
+  });
+  return Object.entries(m)
+    .filter(([, n]) => n >= min)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+}
+
+// Titles/tags come from imported metadata — escape before they hit raw HTML.
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function keywordMatches(kw) {
   return siteVideos.filter(v =>
     v.title.toLowerCase().includes(kw) ||
@@ -878,11 +899,20 @@ app.get('/sitemap-index.xml', (req, res) => {
 
 app.get('/robots.txt', (req, res) => {
   res.set('Content-Type', 'text/plain; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=86400');
   res.send([
     'User-agent: *',
     'Allow: /',
     'Disallow: /admin',
     'Disallow: /api',
+    'Disallow: /previews',
+    'Disallow: /t/',
+    'Disallow: /tx/',
+    'Disallow: /img/',
+    'Disallow: /login',
+    'Disallow: /*?sort=',
+    'Disallow: /*?page=',
+    '',
     'Sitemap: ' + SITE_BASE + '/sitemap.xml',
     'Sitemap: ' + SITE_BASE + '/sitemap-index.xml'
   ].join('\n'));
@@ -903,7 +933,11 @@ app.get('/sitemap.xml', (req, res) => {
     { p: '/privacy-policy', pri: '0.5', freq: 'monthly' },
     { p: '/terms', pri: '0.5', freq: 'monthly' },
     { p: '/2257', pri: '0.5', freq: 'monthly' },
-    { p: '/contact', pri: '0.6', freq: 'monthly' }
+    { p: '/contact', pri: '0.6', freq: 'monthly' },
+    { p: '/categories', pri: '0.9', freq: 'weekly' },
+    { p: '/tags', pri: '0.7', freq: 'weekly' },
+    { p: '/newest', pri: '0.9', freq: 'daily' },
+    { p: '/popular', pri: '0.8', freq: 'daily' }
   ];
   healthyCategories().forEach(c => {
     pages.push({ p: '/category/' + encodeURIComponent(c.toLowerCase()), pri: '0.8', freq: 'weekly' });
@@ -948,7 +982,9 @@ app.get('/sitemap.xml', (req, res) => {
       duration: v.duration,
       uploaded: uploadedDate,
       contentLoc: ext ? '' : v.video,
-      playerLoc: '/' + v.id
+      playerLoc: '/' + v.id,
+      tags: v.tags,
+      category: v.category
     }) + '\n';
   });
   xml += '</urlset>';
@@ -969,7 +1005,9 @@ app.get('/sitemap-:n.xml', (req, res) => {
       duration: v.duration,
       uploaded: uploadedDate,
       contentLoc: ext ? '' : v.video,
-      playerLoc: '/' + v.id
+      playerLoc: '/' + v.id,
+      tags: v.tags,
+      category: v.category
     }) + '\n';
   });
   xml += '</urlset>';
@@ -1159,6 +1197,185 @@ metaKeywords: 'latina video clips, latina clips, latina scenes, HD latina videos
     pageSEOTitle: title,
     pageSEOText: 'Explore free latina video clips in HD with a constant stream of fresh scene selections, amateur favorites, and premium latina collections built for instant viewing.'
   });
+});
+
+// ── Content hubs ──────────────────────────────────────────────────────────
+// Indexable crawl-depth hubs: every category and tag reachable in one hop,
+// each with its own canonical, copy and CollectionPage schema.
+
+app.get('/categories', (req, res) => {
+  const counts = categoryCounts();
+  const list = healthyCategories().map(c => ({
+    name: c,
+    count: counts[c],
+    url: SITE_BASE + '/category/' + encodeURIComponent(c.toLowerCase())
+  }));
+  const topTags = tagCounts(MIN_KEYWORD_VIDEOS).slice(0, 24);
+
+  const title = 'All Categories — Browse Latina Video Categories | Super X Latina';
+  const desc = `Browse every Latina video category on Super X Latina — ${list.length} curated categories of free HD clips, from amateur and homemade to MILF, POV and outdoor scenes.`;
+  const canonical = SITE_BASE + '/categories';
+
+  const links = list.map(c =>
+    `<li><a href="/category/${encodeURIComponent(c.name.toLowerCase())}">${escHtml(c.name)} Latina Videos</a> <span>(${c.count})</span></li>`
+  ).join('');
+
+  const metaHead = seoMetaForPage({
+    title,
+    description: desc,
+    canonical,
+    keywords: 'latina video categories, latina categories, amateur latina, milf latina, pov latina, superxlatina',
+    author: SEO.author,
+    ogType: 'website',
+    ogImage: '/og-image.jpg',
+    ogImageAlt: title,
+    ogLocale: 'en_US',
+    twitterSite: SEO.twitter,
+    rssUrl: '/feed.xml',
+    jsonLd: [
+      seoL.collectionSchema(title, desc, canonical, list.length, 'Latina video categories', null, list),
+      seoL.breadcrumbSchema([
+        { name: SITE_NAME, url: SITE_BASE + '/' },
+        { name: 'Categories', url: canonical }
+      ])
+    ]
+  });
+
+  res.render('page', {
+    title,
+    metaDescription: desc,
+    canonicalUrl: canonical,
+    seoMeta: metaHead,
+    content: '<h1>Browse All Latina Video Categories</h1>' +
+      `<p>Super X Latina organises the library into ${list.length} focused categories so you can jump straight to the style you want. Every category is updated as new HD clips land.</p>` +
+      '<ul class="tag-cloud">' + links + '</ul>' +
+      '<h2>Browse by Tag</h2>' +
+      '<p>Prefer a tag over a category? These are our most-used tags — each one opens a dedicated tag page.</p>' +
+      '<div class="seo-links">' + topTags.map(t =>
+        `<a href="/k/${encodeURIComponent(t[0])}">${escHtml(t[0])}</a>`).join('') + '</div>' +
+      '<h2>Newest &amp; Most Viewed</h2>' +
+      '<p>See what just landed on the <a href="/newest">newest videos page</a>, or catch up on the <a href="/popular">most viewed collection</a>.</p>',
+    siteUrl: SITE_BASE,
+    isAdminPage: false
+  });
+});
+
+app.get('/tags', (req, res) => {
+  const tags = tagCounts(MIN_KEYWORD_VIDEOS).slice(0, 150);
+  const title = 'Popular Latina Video Tags — Browse by Tag | Super X Latina';
+  const desc = `Explore ${tags.length} popular Latina video tags on Super X Latina. Each tag opens a curated page of free HD clips matching that search.`;
+  const canonical = SITE_BASE + '/tags';
+
+  const metaHead = seoMetaForPage({
+    title,
+    description: desc,
+    canonical,
+    keywords: 'latina video tags, latina tags, amateur tags, milf tags, pov tags, superxlatina',
+    author: SEO.author,
+    ogType: 'website',
+    ogImage: '/og-image.jpg',
+    ogImageAlt: title,
+    ogLocale: 'en_US',
+    twitterSite: SEO.twitter,
+    rssUrl: '/feed.xml',
+    jsonLd: [
+      seoL.collectionSchema(title, desc, canonical, tags.length, 'Latina video tags', null,
+        tags.map(([t, n]) => ({ name: t, url: SITE_BASE + '/k/' + encodeURIComponent(t) }))),
+      seoL.breadcrumbSchema([
+        { name: SITE_NAME, url: SITE_BASE + '/' },
+        { name: 'Tags', url: canonical }
+      ])
+    ]
+  });
+
+  res.render('page', {
+    title,
+    metaDescription: desc,
+    canonicalUrl: canonical,
+    seoMeta: metaHead,
+    content: '<h1>Popular Latina Video Tags</h1>' +
+      `<p>Tags are how the ${SITE_NAME} library is cross-linked. Pick one to open a page built around that term, with related tags and matching HD clips.</p>` +
+      '<div class="seo-links">' + tags.map(([t, n]) =>
+        `<a href="/k/${encodeURIComponent(t)}">${escHtml(t)} <span>(${n})</span></a>`).join('') + '</div>' +
+      '<h2>More Ways to Browse</h2>' +
+      '<p>See the full <a href="/categories">category index</a>, the <a href="/newest">newest uploads</a>, or the <a href="/popular">most viewed videos</a>.</p>',
+    siteUrl: SITE_BASE,
+    isAdminPage: false
+  });
+});
+
+// Sorted collections — genuinely different result sets from the homepage, so
+// they carry their own titles/canonicals instead of duplicating the home page.
+function sortedGalleryRoute(path, cfg) {
+  app.get(path, (req, res) => {
+    const list = cfg.sort([...siteVideos]).slice(0, 60);
+    const total = siteVideos.length;
+    const canonical = SITE_BASE + path;
+    const metaHead = seoMetaForPage({
+      title: cfg.title,
+      description: cfg.desc,
+      canonical,
+      keywords: cfg.keywords,
+      author: SEO.author,
+      ogType: 'website',
+      ogImage: '/og-image.jpg',
+      ogImageAlt: cfg.title,
+      ogLocale: 'en_US',
+      twitterSite: SEO.twitter,
+      rssUrl: '/feed.xml',
+      jsonLd: [
+        seoL.collectionSchema(cfg.title, cfg.desc, canonical, total, cfg.about, null, list),
+        seoL.breadcrumbSchema([
+          { name: SITE_NAME, url: SITE_BASE + '/' },
+          { name: cfg.crumb, url: canonical }
+        ])
+      ]
+    });
+
+    res.render('gallery', {
+      title: cfg.title,
+      metaDesc: cfg.desc,
+      seoMeta: metaHead,
+      videos: list.map(slimVideo),
+      featured: list.slice(0, 6).map(slimVideo),
+      heroImages: HERO_MEDIA,
+      categories: healthyCategories(),
+      siteName: SITE_NAME,
+      siteUrl: SITE_BASE,
+      metaKeywords: cfg.keywords,
+      totalVideos: total,
+      totalPages: 1,
+      currentCategory: cfg.hero,
+      seoBlock: true,
+      isAdminPage: false,
+      pageSEOTitle: cfg.title.split('|')[0].trim(),
+      pageSEOText: cfg.seoText
+    });
+  });
+}
+
+sortedGalleryRoute('/newest', {
+  hero: 'Latest',
+  title: 'Newest Latina Videos — Latest HD Uploads | Super X Latina',
+  desc: 'Watch the newest Latina videos first. Fresh HD uploads added daily — free streaming, no sign-up, updated the moment they land.',
+  keywords: 'newest latina videos, latest latina videos, fresh latina clips, new hd latina uploads, superxlatina',
+  crumb: 'Newest Videos',
+  about: 'newest latina videos',
+  sort: (a, b) => (Date.parse(b.uploaded || '') || 0) - (Date.parse(a.uploaded || '') || 0) ||
+    (b.views || 0) - (a.views || 0),
+  seoText: 'This page always shows the most recent uploads first, so crawlers and repeat visitors see the freshest slice of the library without touching the homepage.'
+});
+
+sortedGalleryRoute('/popular', {
+  hero: 'Popular',
+  title: 'Most Viewed Latina Videos — Popular HD Collection | Super X Latina',
+  desc: 'The most viewed Latina videos on Super X Latina — the clips viewers come back to. Free HD streaming, ranked by total views.',
+  keywords: 'most viewed latina videos, popular latina videos, best latina clips, trending latina hd, superxlatina',
+  crumb: 'Most Viewed',
+  about: 'popular latina videos',
+  sort: (a, b) => (b.views || 0) - (a.views || 0) ||
+    (Date.parse(b.uploaded || '') || 0) - (Date.parse(a.uploaded || '') || 0),
+  seoText: 'Ranked by view count across the whole library, this collection surfaces the clips proving most popular with viewers right now.'
 });
 
 app.get('/faq', (req, res) => {
@@ -1901,6 +2118,19 @@ app.get('/:id', (req, res) => {
     publishedTime: video.uploaded,
     section: video.category,
     tags: keywords,
+    // og:video — only for same-origin files. Expiring signed CDN tokens are
+    // useless to scrapers and would break the card the moment they lapse.
+    ...(function () {
+      const localPlayback = !isHotlink && playbackUrl && !/^https?:\/\//.test(playbackUrl) ? playbackUrl : '';
+      if (!localPlayback) return {};
+      return {
+        videoUrl: localPlayback,
+        videoWidth: 1280,
+        videoHeight: 720,
+        videoDuration: video.duration,
+        videoTags: keywords
+      };
+    })(),
     twitterSite: SEO.twitter,
     twitterPlayer: canonicalUrl,
     twitterPlayerWidth: 1280,
@@ -1918,7 +2148,9 @@ app.get('/:id', (req, res) => {
         duration: video.duration,
         views: video.views,
         contentUrl: isHotlink ? undefined : playbackUrl,
-        embedUrl: isHotlink ? canonicalUrl : undefined
+        embedUrl: isHotlink ? canonicalUrl : undefined,
+        tags: keywords,
+        category: video.category
       }),
       seoL.breadcrumbSchema([
         { name: SITE_NAME, url: SITE_BASE + '/' },

@@ -274,6 +274,8 @@
           </div>
         </div>
       <% } %>
+      <a href="/newest">Newest</a>
+      <a href="/popular">Popular</a>
       <a href="/about">About</a>
     </nav>
   </div>
@@ -352,7 +354,7 @@
       </div>
     </div>
     <% } %>
-    <% if (!currentCategory) { %>
+  <% if (!currentCategory || (typeof seoBlock !== 'undefined' && seoBlock)) { %>
     <div class="mid-hero" id="midHero">
       <div class="arnab-hero arnab-hero--home">
         <div class="arnab-hero-media" aria-hidden="true">
@@ -435,6 +437,10 @@
     <p><%- pageSEOText || 'Super X Latina streams the best HD latina and latina videos. New content added daily — fast streaming for all viewers.' %></p>
     <p>Explore focused collections for <strong>latina video clips</strong>, amateur latina videos, homemade Latina scenes, POV videos, and category-based HD streaming. Each collection is organized for faster browsing and regular updates.</p>
     <div class="seo-links">
+      <a href="/categories">All Categories</a>
+      <a href="/tags">Video Tags</a>
+      <a href="/newest">Newest Uploads</a>
+      <a href="/popular">Most Viewed</a>
       <a href="/latina-video-clips">Latina Video Clips</a>
       <a href="/latina-long-tail">Latina Long-Tail Collections</a>
       <a href="https://xmelayu.site">xMelayu — Southeast Asian Amateur Videos</a>
@@ -461,6 +467,10 @@
       <h4>Browse</h4>
       <nav>
         <a href="/">Home</a>
+        <a href="/categories">All Categories</a>
+        <a href="/tags">All Tags</a>
+        <a href="/newest">Newest Videos</a>
+        <a href="/popular">Most Viewed</a>
         <a href="/about">About Super X Latina</a>
         <% if (categories && categories.length) { %>
           <% categories.slice(0, 5).forEach(function(c) { %>
