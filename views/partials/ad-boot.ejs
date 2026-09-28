@@ -1,0 +1,18 @@
+<script>
+/* ad-provider boot — one async load per page; the <ins> slots (sticky/native)
+   already sit in the DOM before serve is pushed, so nothing renders empty. */
+(function () {
+  if (window.__sxlAdsBooted) return;
+  window.__sxlAdsBooted = true;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://a.magsrv.com/ad-provider.js';
+  function serve() { (window.AdProvider = window.AdProvider || []).push({ 'serve': {} }); }
+  s.onload = function () {
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', serve); }
+    else { serve(); }
+  };
+  s.onerror = function () { window.__sxlAdsBooted = false; };
+  document.head.appendChild(s);
+})();
+</script>

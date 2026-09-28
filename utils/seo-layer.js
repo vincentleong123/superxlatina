@@ -215,6 +215,12 @@ function navSchema(items) {
 }
 
 function organizationSchema(siteName, siteUrl, description, sameAs, alternateNames) {
+  const normalizeSocial = (s) => {
+    if (!s) return null;
+    if (/^https?:\/\//.test(s)) return s;
+    if (/^@?([A-Za-z0-9_.]{1,15})$/.test(s)) return 'https://twitter.com/' + s.replace(/^@/, '');
+    return s;
+  };
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -223,11 +229,11 @@ function organizationSchema(siteName, siteUrl, description, sameAs, alternateNam
     url: siteUrl + '/',
     logo: siteUrl + '/favicon.svg',
     description: description || undefined,
-    sameAs: (sameAs || []).filter(Boolean)
+    sameAs: (sameAs || []).map(normalizeSocial).filter(Boolean)
   };
 }
 
-function collectionSchema(name, description, url, totalItems, about, audience) {
+function collectionSchema(name, description, url, totalItems, about, audience, items) {
   const base = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -235,12 +241,20 @@ function collectionSchema(name, description, url, totalItems, about, audience) {
     description: description || undefined,
     url
   };
-  if (totalItems != null) {
+  // Only include ItemList when we have real members — an empty itemListElement
+  // array can trip rich-result validators and adds no signal.
+  if (items && items.length) {
     base.mainEntity = {
       '@type': 'ItemList',
       name,
-      numberOfItems: totalItems,
-      itemListElement: []
+      numberOfItems: totalItems != null ? totalItems : items.length,
+      itemListElement: items.slice(0, 30).map((it, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: it.title || it.name || it.term || String(it),
+        url: (it.id ? url.replace(/\/+$/, '') + '/' + it.id : (it.url || undefined)),
+        image: it.thumbnail ? (it.thumbnail.indexOf('http') === 0 ? it.thumbnail : undefined) : undefined
+      })).filter(x => x.url)
     };
   }
   if (about) base.about = { '@type': 'Thing', name: about };
@@ -282,7 +296,7 @@ function durToIso(d) {
   return iso;
 }
 
-function videoSchema({ siteUrl, id, title, description, thumbnail, uploaded, duration, views, embedUrl, contentUrl }) {
+function videoSchema({ siteUrl, id, title, description, thumbnail, uploaded, duration, views, embedUrl, contentUrl, siteName }) {
   const esc = (s) => String(s || '');
   return {
     '@context': 'https://schema.org',
@@ -300,7 +314,7 @@ function videoSchema({ siteUrl, id, title, description, thumbnail, uploaded, dur
       interactionType: 'WatchAction',
       userInteractionCount: views
     } : undefined,
-    publisher: { '@type': 'Organization', name: null, url: siteUrl }
+    publisher: { '@type': 'Organization', name: siteName || 'Super X Latina', url: siteUrl }
   };
 }
 
@@ -346,19 +360,24 @@ function sitemapEntry(siteUrl, permalink, { updated, changefreq, priority } = {}
   return e;
 }
 
-function videoSitemapEntry(siteUrl, permalink, { title, description, thumbnail, duration, uploaded, contentLoc }) {
+function videoSitemapEntry(siteUrl, permalink, { title, description, thumbnail, duration, uploaded, contentLoc, playerLoc, familyFriendly = 'no' }) {
   const escXml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const thumb = thumbnail && !/^https?:/.test(thumbnail) ? siteUrl + thumbnail : thumbnail;
   let e = `  <url>\n    <loc>${escXml(siteUrl + permalink)}</loc>\n`;
+  if (uploaded) e += `    <lastmod>${escXml(uploaded)}</lastmod>\n`;
   e += `    <video:video>\n      <video:title>${escXml(title)}</video:title>\n`;
   e += `      <video:description>${escXml((description || title).replace(/<[^>]+>/g, '').substring(0, 300))}</video:description>\n`;
   if (thumb) e += `      <video:thumbnail_loc>${escXml(thumb)}</video:thumbnail_loc>\n`;
   // Google requires ABSOLUTE content_loc — relative /videos/*.mp4 was silently dropped.
   const content = contentLoc && !/^https?:/.test(contentLoc) ? siteUrl + contentLoc : contentLoc;
+  // Externally-hosted (hotlinked/signed-CDn) files can't safely expose content_loc;
+  // a player_loc pointing at the in-page player keeps the entry eligible instead.
   if (content) e += `      <video:content_loc>${escXml(content)}</video:content_loc>\n`;
+  else if (playerLoc) e += `      <video:player_loc allow_embed="yes">${escXml(/^https?:/.test(playerLoc) ? playerLoc : siteUrl + playerLoc)}</video:player_loc>\n`;
   const durSecs = durToSeconds(duration);
   if (durSecs) e += `      <video:duration>${durSecs}</video:duration>\n`;
   if (uploaded) e += `      <video:publication_date>${escXml(uploaded)}</video:publication_date>\n`;
+  e += `      <video:family_friendly>${familyFriendly === 'yes' ? 'yes' : 'no'}</video:family_friendly>\n`;
   e += `      <video:requires_subscription>no</video:requires_subscription>\n    </video:video>\n  </url>`;
   return e;
 }

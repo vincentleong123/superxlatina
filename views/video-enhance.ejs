@@ -1,0 +1,23 @@
+<% /* video-enhance — warm cinematic SVG grade for the WPS player (ported from
+       xMelayu). Sharpening lens + gamma lift + warm color matrix + inset
+       vignette. Applied only to the main playing video, never the ad or the
+       scrub-preview stream. */ %>
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;visibility:hidden" aria-hidden="true">
+  <filter id="xai-lens" color-interpolation-filters="sRGB">
+    <feConvolveMatrix order="3" kernelMatrix="0 -0.25 0 -0.25 2 -0.25 0 -0.25 0" preserveAlpha="true"/>
+    <feComponentTransfer>
+      <feFuncR type="gamma" amplitude="1.06" exponent="0.91" offset="0.02"/>
+      <feFuncG type="gamma" amplitude="1.05" exponent="0.93" offset="0.02"/>
+      <feFuncB type="gamma" amplitude="1.05" exponent="0.94" offset="0.01"/>
+    </feComponentTransfer>
+    <feColorMatrix type="matrix" values="1.04 0.00 -0.02 0.00 0.015   0.00 1.03 0.00 0.00 0.010   -0.02 0.00 1.05 0.00 0.005   0.00 0.00 0.00 1.00 0.000"/>
+  </filter>
+</svg>
+<style>
+#wpsVideo{
+  filter:url(#xai-lens) saturate(1.1) contrast(1.06) brightness(1.05);
+  box-shadow:inset 0 0 clamp(44px,8vw,150px) rgba(0,0,0,.45);
+  transform:translateZ(0);will-change:filter
+}
+@media (prefers-reduced-motion:reduce){#wpsVideo{will-change:auto}}
+</style>

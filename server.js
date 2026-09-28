@@ -22,6 +22,11 @@ const thumb = require('./utils/thumb');
 // rewritten titles, snapshot fallback, hot-swap without restart).
 const xcdn = require('./utils/xcdn');
 
+// seo-enrich — recovers real keyword-rich titles/category/tags/featured from
+// the external video slugs, replacing the generic "Super X Latina Video NNNN"
+// rewrites (pure/deterministic, re-applied on every sync).
+const seoEnrich = require('./utils/seo-enrich');
+
 const app = express();
 app.set('trust proxy', 1);          // Cloudflare tunnel → use real visitor IP (X-Forwarded-For)
 app.disable('x-powered-by');        // hide Express fingerprint
@@ -146,12 +151,61 @@ setInterval(() => {
 
 app.use(rateLimit);
 
+// Lightweight in-memory traffic counters for the operator console. No IPs or
+// request bodies are retained; counters reset when the process restarts.
+const traffic = {
+  startedAt: Date.now(), total: 0, pages: 0, media: 0, bots: 0,
+  status2xx: 0, status3xx: 0, status4xx: 0, status5xx: 0,
+  windowStartedAt: Date.now(), windowTotal: 0, windowBots: 0, windowPages: 0
+};
+app.use((req, res, next) => {
+  const bot = isBot(req.get('User-Agent') || '');
+  const media = RL_MEDIA_PATHS.some(p => req.path === p || req.path.startsWith(p + '/'));
+  traffic.total++;
+  traffic.windowTotal++;
+  if (bot) { traffic.bots++; traffic.windowBots++; }
+  if (media) traffic.media++;
+  else { traffic.pages++; traffic.windowPages++; }
+  res.on('finish', () => {
+    const bucket = Math.floor(res.statusCode / 100);
+    if (bucket === 2) traffic.status2xx++;
+    else if (bucket === 3) traffic.status3xx++;
+    else if (bucket === 4) traffic.status4xx++;
+    else if (bucket === 5) traffic.status5xx++;
+  });
+  next();
+});
+
+setInterval(() => {
+  const mins = Math.max(1, (Date.now() - traffic.startedAt) / 60000);
+  const windowMins = Math.max(1, (Date.now() - traffic.windowStartedAt) / 60000);
+  console.log(`[traffic] ${traffic.windowTotal} requests/${windowMins.toFixed(1)}m | ${traffic.windowPages} pages | ${traffic.windowBots} bots | total ${traffic.total} | avg ${Math.round(traffic.total / mins)}/min | 2xx ${traffic.status2xx} | 3xx ${traffic.status3xx} | 4xx ${traffic.status4xx} | 5xx ${traffic.status5xx}`);
+  traffic.windowStartedAt = Date.now();
+  traffic.windowTotal = 0;
+  traffic.windowBots = 0;
+  traffic.windowPages = 0;
+}, 60000);
+
 // Canonical-domain guard — `www.superxlatina.com` and old `*.superxlatina.site`
 // → 301 to apex `https://superxlatina.com` (no duplicate-content signals).
 app.use((req, res, next) => {
   const host = (req.headers.host || '').toLowerCase();
   if (host && /(?:^|\.)superxlatina\.(?:com|site)$/i.test(host) && host !== 'superxlatina.com') {
     return res.redirect(301, 'https://superxlatina.com' + req.originalUrl);
+  }
+  next();
+});
+
+// Trailing-slash canonicalization: /category/foo/ → /category/foo (and any HTML
+// path). Avoids duplicate-content variants that the canonical tag alone papers
+// over. Static, API, admin, and media paths are left untouched.
+app.use((req, res, next) => {
+  if (req.method === 'GET' && req.path.length > 1 && req.path.endsWith('/') &&
+      !req.path.startsWith('/api') && !req.path.startsWith('/admin') &&
+      !req.path.startsWith('/videos') && !req.path.startsWith('/thumbnails') &&
+      !req.path.startsWith('/previews') && !req.path.startsWith('/t') && !req.path.startsWith('/tx')) {
+    const q = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+    return res.redirect(301, req.path.replace(/\/+$/, '') + q);
   }
   next();
 });
@@ -224,7 +278,14 @@ let siteVideos = [];
 let externalVideos = [];
 let localVideos = [];
 const EXTERNAL_INDEX_FILE = path.join(DATA_DIR, 'video-index-external.json');
+const FEATURED_FILE = path.join(DATA_DIR, 'site-featured.json');
 let descriptions = {};
+
+// Curated homepage featured strip (ids verified against the live catalog).
+try {
+  const ftr = JSON.parse(fs.readFileSync(FEATURED_FILE, 'utf8'));
+  seoEnrich.loadFeatured(Array.isArray(ftr) ? ftr : (ftr.videos || []));
+} catch (e) {}
 
 // External CDN sync (xamateur/hotlinked library). Disabled via config
 // `externalSync: false` — superxlatina.com serves only local hentai_videos.
@@ -287,6 +348,10 @@ function saveExternalIndex(entries) {
 function applyExternal() {
   const base = siteVideos.filter(v => !v.external && !externalVideos.some(e => e.id === v.id));
   siteVideos = base.concat(externalVideos);
+  // SEO enrichment (external only): real titles/categories/tags/featured from
+  // slugs. Runs on every sync path (boot, xcdn poll, blacklist, import) so a
+  // fresh snapshot is re-enriched the moment it lands — never served generic.
+  siteVideos.forEach(v => seoEnrich.apply(v));
 }
 
 function persistLocalVideos() {
@@ -412,6 +477,19 @@ function thumbSrc(v) {
   return v.thumbnail || '/thumbnails/' + v.id + '.jpg';
 }
 
+function buildSeoVideoTitle(title, category) {
+  const base = String(title || 'Latina Video').replace(/\s+/g, ' ').trim();
+  const additions = [];
+  if (!/\blatina\b/i.test(base)) additions.push('Latina');
+  if (!/\b(video|clip|scene|stream|watch)\b/i.test(base)) additions.push('Video Clip');
+  const cat = String(category || '').trim();
+  if (cat && !/^general$/i.test(cat) && !new RegExp('\\b' + cat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i').test(base)) {
+    additions.push(cat);
+  }
+  const enriched = additions.length ? `${base} — ${additions.join(' ')}` : base;
+  return enriched.length > 95 ? enriched.slice(0, 92).replace(/\s+\S*$/, '') : enriched;
+}
+
 function slimVideo(v) {
   const dur = parseDuration(v.duration);
   const size = fileSizes[v.id];
@@ -420,7 +498,7 @@ function slimVideo(v) {
     ? (v.video || transformer.tokenUrl(v.source || v.sourceUrl))
     : (v.video || ('/videos/' + v.id + '.mp4'));
   return {
-    id: v.id, title: v.title, video: playback,
+    id: v.id, title: buildSeoVideoTitle(v.title, v.category), video: playback,
     source: v.source || null,
     external: isExternal || undefined,
     thumbnail: thumbSrc(v),
@@ -452,14 +530,6 @@ function getRelated(video, max = 12) {
   return related.sort(() => Math.random() - 0.5).slice(0, max);
 }
 
-// SEO Generator
-const SEOGenerator = require('./utils/seo-generator');
-const seo = new SEOGenerator({
-  siteName: 'Super X Latina',
-  siteUrl: SITE_BASE,
-  socialMedia: { twitter: '@superxlatina', facebook: 'superxlatina' }
-});
-
 // ── SEO Layer (WordPress/Yoast + Next.js metadata conventions in Express) ──
 const seoL = require('./utils/seo-layer');
 
@@ -468,6 +538,24 @@ const keywordSEO = require('./utils/keyword-seo');
 const SEO = config.seo || {};
 const SITE_NAME = 'Super X Latina';
 const CONTACT_EMAIL = config.contactEmail || 'admin@superxlatina.com';
+const LONG_TAIL_SEO_PAGES = [
+  'latina video clips',
+  'latina amateur videos',
+  'latina milf videos',
+  'latina teen videos',
+  'latina pov videos',
+  'latina blowjob clips',
+  'latina threesome videos',
+  'latina creampie videos',
+  'latina anal videos',
+  'latina public videos',
+  'latina lesbian videos',
+  'latina solo videos',
+  'latina homemade videos',
+  'latina college videos',
+  'latina big ass videos',
+  'latina gangbang videos'
+];
 
 // Thin-content guards: keyword/category pages with too few videos are served
 // but noindexed (never dead links, never doorway pages).
@@ -494,6 +582,19 @@ function keywordMatches(kw) {
     (v.tags || []).some(t => t.toLowerCase().includes(kw)) ||
     (v.category || '').toLowerCase() === kw
   );
+}
+
+function longTailMatches(term) {
+  const q = String(term || '').toLowerCase().trim();
+  if (!q) return [];
+  const words = q.split(/\s+/).filter(Boolean);
+  return siteVideos.filter(v => {
+    const text = `${v.title || ''} ${(v.tags || []).join(' ')} ${v.category || ''}`.toLowerCase();
+    if (text.includes(q)) return true;
+    if (words.length <= 1) return text.includes(words[0] || q);
+    const hitCount = words.filter(w => w.length > 2 && text.includes(w)).length;
+    return hitCount >= Math.min(2, words.length);
+  });
 }
 
 // Non-public paths: robots.txt alone is not enough — enforce a header so
@@ -543,14 +644,18 @@ app.get('/', (req, res) => {
   const categories = healthyCategories();
   const featured = siteVideos.filter(v => v.featured).slice(0, 6).map(slimVideo);
 
-  const pageSEOTitle = 'Super X Latina — Free HD Latina & Amateur Video Collection';
-  const pageSEOText = nlpWriter.generatePageSEO('latina', siteVideos.length);
-  const homeMeta = nlpWriter.generatePageSEO('latina', siteVideos.length);
+  const pageSEOTitle = 'Free Latina Video Clips, Amateur Videos & HD Latina Streaming';
+  const pageSEOText = `Super X Latina is a curated collection of free latina video clips, amateur latina videos, homemade scenes, and HD streaming. Browse fresh uploads by category, discover long-tail collections such as latina POV and latina MILF videos, and watch instantly without registration.`;
 
-  const firstPage = shuffle(siteVideos).map(slimVideo);
+  // Keep the server-rendered crawl surface stable: randomizing the first page
+  // makes crawlers see a different homepage on every request.
+  const firstPage = [...siteVideos]
+    .sort((a, b) => (Date.parse(b.uploaded || '') || 0) - (Date.parse(a.uploaded || '') || 0) ||
+      (b.views || 0) - (a.views || 0) || String(a.id).localeCompare(String(b.id)))
+    .map(slimVideo);
 
-  const homeTitle = SEO.homeTitle || 'Super X Latina — HD Latina Videos';
-  const homeDesc = SEO.homeDescription || homeMeta.substring(0, 160);
+  const homeTitle = SEO.homeTitle || 'Super X Latina — Free Latina Video Clips & HD Latina Videos';
+  const homeDesc = SEO.homeDescription || 'Watch free latina video clips, HD latina scenes, and fresh amateur latina videos. Stream instantly on Super X Latina.';
   const homeCanonical = SITE_BASE + '/';
   const metaHead = seoMetaForPage({
     title: homeTitle,
@@ -567,7 +672,7 @@ app.get('/', (req, res) => {
     jsonLd: [
       seoL.websiteSchema(SITE_NAME, SITE_BASE, homeDesc, [SEO.identity], ['en']),
       seoL.organizationSchema(SITE_NAME, SITE_BASE, homeDesc, [SEO.twitter]),
-      seoL.collectionSchema(homeTitle, homeDesc, homeCanonical, siteVideos.length, SEO.identity)
+      seoL.collectionSchema(homeTitle, homeDesc, homeCanonical, siteVideos.length, SEO.identity, null, siteVideos)
     ]
   });
 
@@ -581,8 +686,7 @@ app.get('/', (req, res) => {
     categories,
     siteName: SITE_NAME,
     siteUrl: SITE_BASE,
-    structuredData: seo.generateStructuredData('organization') + seo.generateStructuredData('website'),
-    metaKeywords: 'latina, latina videos, latina HD, latina porn, latina streaming, latina collection, superxlatina, amateur latina',
+    metaKeywords: 'latina video clips, latina clips, latina videos, HD latina clips, latina porn, latina streaming, latina collection, superxlatina, amateur latina',
     totalVideos: siteVideos.length,
     totalPages: Math.ceil(siteVideos.length / FEED_PER_PAGE),
     currentCategory: '',
@@ -653,6 +757,48 @@ app.post('/api/rewrite-descriptions/preview', express.json(), (req, res) => {
   }
 });
 
+// API: apply NLP SEO only to an explicit admin-selected set. By default this
+// fills missing/generated records and leaves existing editorial copy untouched.
+function isBoilerplateDescription(description) {
+  const plain = String(description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return !plain || /^(?:Super X Latina\s*[—-]\s*)?Premium HD latina video collection\. Browse more content!?$/i.test(plain);
+}
+
+app.post('/api/rewrite-descriptions/selected', express.json(), (req, res) => {
+  if (!req.isAdmin) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const ids = Array.isArray(req.body && req.body.ids) ? req.body.ids.map(String).filter(Boolean) : [];
+    const overwrite = req.body && req.body.overwrite === true;
+    if (!ids.length) return res.status(400).json({ error: 'Select at least one video.' });
+    const wanted = new Set(ids);
+    const report = { selected: ids.length, updated: 0, skipped: 0, missing: 0 };
+    siteVideos.forEach(v => {
+      if (!wanted.has(String(v.id))) return;
+      if (!overwrite && v.description && !descriptions[v.id]?.generated && !isBoilerplateDescription(v.description)) {
+        report.skipped++;
+        return;
+      }
+      const result = nlpWriter.generateFullDescription(v.title, v.category);
+      v.description = result.description;
+      v.tags = [...new Set([...(v.tags || []), ...(result.keywords || [])])].slice(0, 8);
+      descriptions[v.id] = {
+        description: result.description,
+        keywords: result.keywords,
+        generated: true,
+        lastUpdated: new Date().toISOString()
+      };
+      report.updated++;
+    });
+    report.missing = ids.filter(id => !siteVideos.some(v => String(v.id) === id)).length;
+    saveDescriptions();
+    fs.writeFileSync(path.join(DATA_DIR, 'videos.json'), JSON.stringify(siteVideos.filter(v => !v.external), null, 2));
+    if (report.updated) saveExternalIndex(externalVideos);
+    res.json({ ok: true, ...report });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/admin', (req, res) => {
   if (!req.isAdmin) return res.redirect('/admin/login');
   const hostCounts = {};
@@ -694,7 +840,6 @@ app.get('/about', (req, res) => {
       jsonLd: [seoL.organizationSchema(SITE_NAME, SITE_BASE, 'Super X Latina — free HD latina and amateur video collection', [SEO.twitter])]
     }),
     content: '<h1>About Super X Latina</h1><p>Super X Latina is a collection of high-quality latina and amateur videos. We curate the best content for your viewing pleasure.</p><p>Browse our extensive library of HD videos updated daily.</p><h2>Network</h2><p>Super X Latina is part of a network of free adult video platforms, each focused on its own niche:</p><ul><li><a href="https://xmelayu.site">xMelayu</a> — authentic Southeast Asian amateur videos.</li><li><a href="https://superxhentai.com">Super X Hentai</a> — curated HD hentai videos.</li></ul><h2>2257 Statement</h2><p>All models, actors, actresses and other persons that appear in any visual depiction of actual or simulated sexually explicit conduct appearing on this site were over the age of eighteen (18) years at the time of the depiction. Records required by Section 2257 of Title 18 of the U.S. Code and 28 C.F.R. 75 are maintained by the respective content producers. Where no records exist, the content is treated as exempt works of non-commercial origin or is not based on actual persons.</p><h2>Contact</h2><p>For DMCA, privacy or general inquiries, see our <a href="/dmca">DMCA policy</a>, <a href="/privacy-policy">privacy policy</a>, or <a href="/contact">contact page</a>.</p>',
-    structuredData: seo.generateStructuredData('organization'),
     siteUrl: SITE_BASE,
     isAdminPage: false
   });
@@ -729,6 +874,18 @@ function videoSitemapSlice(page) {
 app.get('/sitemap-index.xml', (req, res) => {
   res.set('Content-Type', 'application/xml');
   res.send(seoL.buildSitemapIndex({ siteUrl: SITE_BASE, count: siteVideos.length }));
+});
+
+app.get('/robots.txt', (req, res) => {
+  res.set('Content-Type', 'text/plain; charset=utf-8');
+  res.send([
+    'User-agent: *',
+    'Allow: /',
+    'Disallow: /admin',
+    'Disallow: /api',
+    'Sitemap: ' + SITE_BASE + '/sitemap.xml',
+    'Sitemap: ' + SITE_BASE + '/sitemap-index.xml'
+  ].join('\n'));
 });
 
 app.get('/sitemap.xml', (req, res) => {
@@ -770,18 +927,28 @@ app.get('/sitemap.xml', (req, res) => {
     .sort((a, b) => kwCounts[b] - kwCounts[a])
     .slice(0, 40)
     .forEach(k => pages.push({ p: '/k/' + encodeURIComponent(k), pri: '0.6', freq: 'weekly' }));
+  LONG_TAIL_SEO_PAGES.forEach(term => {
+    const slug = term.toLowerCase().replace(/\s+/g, '-');
+    const matches = longTailMatches(term).length;
+    if (matches > 0) pages.push({ p: '/long-tail/' + encodeURIComponent(slug), pri: '0.7', freq: 'weekly' });
+  });
+  pages.push({ p: '/latina-long-tail', pri: '0.7', freq: 'weekly' });
   pages.forEach(pg => { xml += seoL.sitemapEntry(SITE_BASE, pg.p, { updated: today, changefreq: pg.freq, priority: pg.pri }) + '\n'; });
 
-  // Videos
+  // Videos — content_loc only for locally-hosted files: hotlinked/transformed
+  // sources resolve to expiring signed cdn tokens that Google can't process,
+  // so those entries drop content_loc and expose the in-page player instead.
   videoSitemapSlice(1).forEach(v => {
     const uploadedDate = v.uploaded ? new Date(v.uploaded).toISOString().split('T')[0] : today;
+    const ext = !!(v.external || v.source || (v.sourceUrl && !v.filePath));
     xml += seoL.videoSitemapEntry(SITE_BASE, '/' + v.id, {
       title: v.title,
-      description: v.description || v.title,
+      description: descriptions[v.id]?.description || v.description || v.title,
       thumbnail: absUrl(thumbSrc(v) || ('/thumbnails/' + v.id + '.jpg')),
       duration: v.duration,
       uploaded: uploadedDate,
-      contentLoc: v.video
+      contentLoc: ext ? '' : v.video,
+      playerLoc: '/' + v.id
     }) + '\n';
   });
   xml += '</urlset>';
@@ -794,13 +961,15 @@ app.get('/sitemap-:n.xml', (req, res) => {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">\n';
   videoSitemapSlice(parseInt(req.params.n) || 2).forEach(v => {
     const uploadedDate = v.uploaded ? new Date(v.uploaded).toISOString().split('T')[0] : today;
+    const ext = !!(v.external || v.source || (v.sourceUrl && !v.filePath));
     xml += seoL.videoSitemapEntry(SITE_BASE, '/' + v.id, {
       title: v.title,
-      description: v.description || v.title,
+      description: descriptions[v.id]?.description || v.description || v.title,
       thumbnail: absUrl(thumbSrc(v) || ('/thumbnails/' + v.id + '.jpg')),
       duration: v.duration,
       uploaded: uploadedDate,
-      contentLoc: v.video
+      contentLoc: ext ? '' : v.video,
+      playerLoc: '/' + v.id
     }) + '\n';
   });
   xml += '</urlset>';
@@ -839,7 +1008,7 @@ app.get('/k/:keyword', (req, res) => {
     twitterSite: SEO.twitter,
     rssUrl: '/feed.xml',
     jsonLd: [
-      seoL.collectionSchema(title, desc, kwCanonical, matches.length, kw),
+      seoL.collectionSchema(title, desc, kwCanonical, matches.length, kw, null, matches),
       seoL.breadcrumbSchema([
         { name: SITE_NAME, url: SITE_BASE + '/' },
         { name: kw + ' Videos', url: kwCanonical }
@@ -863,7 +1032,135 @@ app.get('/k/:keyword', (req, res) => {
   });
 });
 
+app.get('/long-tail/:slug', (req, res) => {
+  const slug = String(req.params.slug || '').toLowerCase().trim();
+  const term = slug.replace(/-/g, ' ');
+  const matches = longTailMatches(term);
+  if (!matches.length) {
+    res.set('X-Robots-Tag', 'noindex, nofollow');
+    return res.status(404).render('error', { message: 'Long-tail keyword page not found', siteUrl: SITE_BASE, isAdminPage: false });
+  }
+
+  const page = keywordSEO.buildLongTailPageData(term, matches, SITE_NAME, slug);
+  const canonical = SITE_BASE + '/long-tail/' + encodeURIComponent(slug);
+  const metaHead = seoMetaForPage({
+    title: page.title,
+    description: page.description,
+    canonical,
+    keywords: `${term}, latina clips, latina videos, superxlatina`,
+    ogType: 'website',
+    ogImage: '/og-image.jpg',
+    ogImageAlt: page.title,
+    twitterSite: SEO.twitter,
+    jsonLd: [
+      seoL.collectionSchema(page.title, page.description, canonical, matches.length, term, null, matches),
+      seoL.breadcrumbSchema([
+        { name: SITE_NAME, url: SITE_BASE + '/' },
+        { name: page.h1, url: canonical }
+      ])
+    ]
+  });
+
+  res.render('keyword', {
+    title: page.title,
+    metaDesc: page.description,
+    seoMeta: metaHead,
+    keyword: term,
+    heading: page.h1,
+    content: `<h2>🔎 ${page.h1}</h2><p>Browse our ${page.count} ${term} results with fresh, free Latina clips, HD scenes, and hand-picked video selections.</p><p>Searchers looking for <strong>${term}</strong> often want fresh clips, strong video quality, and a fast-loading collection — this page is structured to match that intent.</p>`,
+    emoji: '🔎',
+    relatedKeywords: keywordSEO.findRelatedKeywords(term, matches).slice(0, 10),
+    videos: shuffle(matches).slice(0, 60).map(slimVideo),
+    total: matches.length,
+    siteName: SITE_NAME,
+    siteUrl: SITE_BASE,
+    isAdminPage: false
+  });
+});
+
+app.get('/latina-long-tail', (req, res) => {
+  const pages = LONG_TAIL_SEO_PAGES.map((term) => ({
+    term,
+    slug: term.toLowerCase().replace(/\s+/g, '-'),
+    matches: longTailMatches(term).length,
+    url: SITE_BASE + '/long-tail/' + term.toLowerCase().replace(/\s+/g, '-')
+  })).filter(p => p.matches > 0).slice(0, 20);
+
+  const title = 'Latina Long Tail Keywords — Free Latina Video Clips & Search Intent Pages';
+  const desc = 'Browse our long-tail latina keyword pages for targeted search intent including latina video clips, amateur latina videos, milf clips, POV, teen, anal, and more.';
+  const canonical = SITE_BASE + '/latina-long-tail';
+
+  res.render('page', {
+    title,
+    metaDescription: desc,
+    canonicalUrl: canonical,
+    seoMeta: seoMetaForPage({
+      title,
+      description: desc,
+      canonical,
+      keywords: 'latina long tail keywords, latina video clips, latina amateur videos, latina milf videos, latina pov videos',
+      ogType: 'website',
+      ogImage: '/og-image.jpg',
+      jsonLd: [seoL.collectionSchema(title, desc, canonical, pages.length, 'Latina long-tail keyword pages', null, pages)]
+    }),
+    content: '<h1>Latina Long Tail Keywords</h1>' +
+      '<p>These targeted pages help search engines understand the different ways users search for Latina video collections.</p>' +
+      '<ul>' + pages.map(p => '<li><a href="' + p.url + '">' + p.term + '</a> (' + p.matches + ' matches)</li>').join('') + '</ul>',
+    siteUrl: SITE_BASE,
+    isAdminPage: false
+  });
+});
+
 // FAQ page
+app.get('/latina-video-clips', (req, res) => {
+  const matches = siteVideos.filter(v => {
+    const text = `${v.title || ''} ${(v.tags || []).join(' ')} ${v.category || ''}`.toLowerCase();
+    return text.includes('latina') || text.includes('clip') || text.includes('scene') || text.includes('amateur');
+  });
+  const selected = shuffle(matches).slice(0, 36);
+  const title = 'Latina Video Clips — Free HD Latina Clips & Scenes | Super X Latina';
+  const desc = 'Browse the best latina video clips in HD. Fresh latina scenes, amateur clips, and free streaming on Super X Latina.';
+  const canonical = SITE_BASE + '/latina-video-clips';
+  const metaHead = seoMetaForPage({
+    title,
+    description: desc,
+    canonical,
+    keywords: 'latina video clips, latina clips, latina scenes, HD latina videos, superxlatina',
+    author: SEO.author,
+    ogType: 'website',
+    ogImage: '/og-image.jpg',
+    ogImageAlt: title,
+    twitterSite: SEO.twitter,
+    rssUrl: '/feed.xml',
+    jsonLd: [
+      seoL.collectionSchema(title, desc, canonical, selected.length, 'latina video clips', null, selected),
+      seoL.breadcrumbSchema([
+        { name: SITE_NAME, url: SITE_BASE + '/' },
+        { name: 'Latina Video Clips', url: canonical }
+      ])
+    ]
+  });
+
+  res.render('gallery', {
+    title,
+    metaDesc: desc,
+    seoMeta: metaHead,
+    videos: selected.map(slimVideo),
+    featured: selected.slice(0, 6).map(slimVideo),
+    heroImages: HERO_MEDIA,
+    categories: healthyCategories(),
+    siteName: SITE_NAME,
+    siteUrl: SITE_BASE,
+metaKeywords: 'latina video clips, latina clips, latina scenes, HD latina videos, superxlatina',
+    totalVideos: matches.length,
+    totalPages: Math.ceil(matches.length / FEED_PER_PAGE),
+    currentCategory: 'Latina Video Clips',
+    isAdminPage: false,
+    pageSEOTitle: title,
+    pageSEOText: 'Explore free latina video clips in HD with a constant stream of fresh scene selections, amateur favorites, and premium latina collections built for instant viewing.'
+  });
+});
+
 app.get('/faq', (req, res) => {
   const faq = SEO.faq || [];
   const content = '<h1>FAQ</h1>' + faq.map(f => `<h2>${f.q}</h2><p>${f.a}</p>`).join('');
@@ -880,7 +1177,6 @@ app.get('/faq', (req, res) => {
       jsonLd: [seoL.faqSchema(faq)]
     }),
     content,
-    structuredData: '',
     siteUrl: SITE_BASE,
     isAdminPage: false
   });
@@ -914,7 +1210,6 @@ app.get('/dmca', (req, res) => {
       '<p>Upon receipt of a valid notice, we will promptly remove or disable access to the allegedly infringing material and notify the uploader. Repeat infringers may have their content removed or be permanently barred.</p>' +
       '<h2>Counter-Notification</h2>' +
       '<p>If your material was removed and you believe it was a mistake or misidentification, you may send a counter-notification to <a href="mailto:' + email + '">' + email + '</a>. It must include your contact details, identification of the removed material, a statement under penalty of perjury that you have a good-faith belief the material was removed by mistake, and your consent to the jurisdiction of your local federal court.</p>',
-    structuredData: '',
     siteUrl: SITE_BASE,
     isAdminPage: false
   });
@@ -950,7 +1245,6 @@ app.get('/privacy-policy', (req, res) => {
       '<h2>Contact</h2>' +
       '<p>Questions about this policy can be sent to <a href="mailto:' + email + '">' + email + '</a>.</p>' +
       '<p>We may update this policy from time to time. Continued use of the site after changes means you accept the updated policy.</p>',
-    structuredData: '',
     siteUrl: SITE_BASE,
     isAdminPage: false
   });
@@ -979,7 +1273,6 @@ app.get('/contact', (req, res) => {
       '<h2>Send a Message</h2>' +
       '<p>Clicking the button below opens your email app with everything pre-filled.</p>' +
       '<p><a class="tag" href="mailto:' + email + '?subject=' + encodeURIComponent('Inquiry about Super X Latina') + '&body=' + encodeURIComponent('Hi Super X Latina team,\n\n') + '" style="padding:10px 18px;border-radius:8px;display:inline-block">&#x1F4E9; Email ' + email + '</a></p>',
-    structuredData: '',
     siteUrl: SITE_BASE,
     isAdminPage: false
   });
@@ -1017,7 +1310,6 @@ app.get('/terms', (req, res) => {
       '<p>We may update these Terms from time to time. Changes take effect when posted. Continued use of the Site after changes are posted means you accept the updated Terms.</p>' +
       '<h2>8. Contact</h2>' +
       '<p>Questions about these Terms can be sent to <a href="mailto:' + email + '">' + email + '</a>.</p>',
-    structuredData: '',
     siteUrl: SITE_BASE,
     isAdminPage: false
   });
@@ -1049,7 +1341,6 @@ app.get('/2257', (req, res) => {
       '<p>The Site may contain links to or embed content from third-party websites. Super X Latina has no control over and assumes no responsibility for the content, privacy policies or practices of any third-party sites. All third-party content providers are required to maintain their own 2257-compliant record-keeping systems.</p>' +
       '<h2>Content Removal</h2>' +
       '<p>If you believe any content on this Site violates 18 U.S.C. § 2257 or contains non-compliant material, please contact us immediately at <a href="mailto:' + email + '">' + email + '</a> with specific details. We will investigate and remove non-compliant content within 48 hours.</p>',
-    structuredData: '',
     siteUrl: SITE_BASE,
     isAdminPage: false
   });
@@ -1113,8 +1404,8 @@ app.get('/category/:cat', (req, res) => {
 
   const thin = filtered.length < MIN_CATEGORY_VIDEOS;
   res.setHeader('X-Robots-Tag', thin ? 'noindex, nofollow' : 'index, follow, max-snippet:-1, max-image-preview:large');
-  const title = `${cat} Latina Videos — Super X Latina`;
-  const metaDesc = `Watch ${cat} latina videos in HD on Super X Latina. HD content collection.`;
+  const title = `${cat} Latina Videos — Free ${cat} Latina Video Clips | Super X Latina`;
+  const metaDesc = `Watch ${cat} latina video clips in HD on Super X Latina. Browse the best ${cat.toLowerCase()} latina scenes and fresh latina videos.`;
 
   const pageSEOTitle = `${cat} Latina Videos — Super X Latina`;
   const pageSEOText = nlpWriter.generatePageSEO(cat, filtered.length);
@@ -1136,7 +1427,7 @@ app.get('/category/:cat', (req, res) => {
     twitterSite: SEO.twitter,
     rssUrl: '/feed.xml',
     jsonLd: [
-      seoL.collectionSchema(title, metaDesc, catCanonical, filtered.length, cat),
+      seoL.collectionSchema(title, metaDesc, catCanonical, filtered.length, cat, null, filtered),
       seoL.breadcrumbSchema([
         { name: SITE_NAME, url: SITE_BASE + '/' },
         { name: cat + ' Videos', url: catCanonical }
@@ -1154,13 +1445,7 @@ app.get('/category/:cat', (req, res) => {
     categories: healthyCategories(),
     siteName: SITE_NAME,
     siteUrl: SITE_BASE,
-    structuredData: seo.generateStructuredData('collection', { name: title, description: metaDesc }) + seo.generateStructuredData('breadcrumb', {
-      items: [
-        { name: SITE_NAME, url: SITE_BASE + '/' },
-        { name: cat + ' Videos', url: SITE_BASE + '/category/' + encodeURIComponent(cat.toLowerCase()) }
-      ]
-    }),
-    metaKeywords: `latina videos, ${cat.toLowerCase()} videos, superxlatina, HD latina, ${cat.toLowerCase()} latina videos`,
+metaKeywords: `latina video clips, ${cat.toLowerCase()} latina video clips, latina videos, ${cat.toLowerCase()} videos, superxlatina, HD latina, ${cat.toLowerCase()} latina videos`,
     totalVideos: filtered.length,
     totalPages: Math.ceil(filtered.length / FEED_PER_PAGE),
     currentCategory: cat,
@@ -1505,6 +1790,66 @@ app.post('/api/external/import', express.json(), (req, res) => {
   }
 });
 
+// Admin API: publish CDN player URLs or friendly CDN page URLs. Friendly page
+// URLs are resolved through the CDN catalog so callers never handle tokens.
+app.post('/api/external/import-cdn-urls', express.text({ type: ['text/plain', 'text/x-txt'], limit: '2mb' }), async (req, res) => {
+  if (!req.isAdmin) return res.status(401).json({ error: 'Unauthorized' });
+  if (!externalSyncEnabled) return res.status(403).json({ error: 'externalSync is disabled in config.json' });
+  const allowedHost = 'cdn.superxlatina.com';
+  const lines = String(req.body || '').split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#'));
+  const existing = new Map(externalVideos.map(v => [v.id, v]));
+  const imported = [];
+  const errors = [];
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
+    const parts = line.split('|').map(s => s.trim());
+    const rawUrl = parts.length > 1 ? parts[1] : parts[0];
+    let parsed;
+    try { parsed = new URL(rawUrl); } catch (e) { errors.push({ line: index + 1, error: 'Invalid URL' }); continue; }
+    if (parsed.hostname.toLowerCase() !== allowedHost) {
+      errors.push({ line: index + 1, error: 'Only cdn.superxlatina.com URLs are accepted' });
+      continue;
+    }
+    let playbackUrl = rawUrl;
+    let metadata = {};
+    const pathParts = parsed.pathname.split('/').filter(Boolean);
+    if (pathParts[0] !== 't' && pathParts[0] !== 'v') {
+      const videoId = pathParts[pathParts.length - 1];
+      try {
+        const apiRes = await fetch(`${parsed.origin}/api/video/${encodeURIComponent(videoId)}`);
+        if (!apiRes.ok) throw new Error(`catalog returned ${apiRes.status}`);
+        metadata = await apiRes.json();
+        playbackUrl = metadata.video && (metadata.video.startsWith('http') ? metadata.video : parsed.origin + metadata.video);
+        if (!playbackUrl) throw new Error('catalog record has no playback URL');
+      } catch (e) {
+        errors.push({ line: index + 1, error: 'Could not resolve CDN page: ' + e.message });
+        continue;
+      }
+    }
+    const token = playbackUrl.split('/').filter(Boolean).pop() || '';
+    const id = 'cdn-' + crypto.createHash('sha1').update(rawUrl).digest('hex').slice(0, 16);
+    if (existing.has(id)) continue;
+    const title = parts[0] !== rawUrl ? parts[0] : (metadata.title || `Super X Latina CDN Video ${token.slice(0, 10)}`);
+    const entry = {
+      id,
+      title,
+      video: playbackUrl,
+      thumbnail: parts[2] || metadata.thumbnail || '',
+      duration: parts[3] || metadata.duration || '0:30',
+      category: parts[4] || metadata.category || 'General',
+      tags: metadata.tags || ['latina', 'cdn', 'video'],
+      uploaded: metadata.uploaded || new Date().toISOString(),
+      external: true
+    };
+    externalVideos.push(entry);
+    existing.set(id, entry);
+    imported.push(entry);
+  }
+  saveExternalIndex(externalVideos);
+  siteVideos = siteVideos.filter(v => !externalVideos.some(e => e.id === v.id)).concat(externalVideos);
+  res.json({ ok: true, added: imported.length, skipped: lines.length - imported.length - errors.length, errors, total: externalVideos.length });
+});
+
 // Video player
 app.get('/:id', (req, res) => {
   const video = getVideo(req.params.id);
@@ -1514,7 +1859,7 @@ app.get('/:id', (req, res) => {
     return res.status(404).render('error', { message: 'Video not found', siteUrl: SITE_BASE, isAdminPage: false });
   }
   const related = getRelated(video);
-  const desc = video.external ? '' : (descriptions[video.id]?.description || '');
+  const desc = descriptions[video.id]?.description || video.description || '';
   const keywords = video.tags || [];
 
   // Prev/Next in library order (array order in videos.json)
@@ -1522,17 +1867,9 @@ app.get('/:id', (req, res) => {
   const prevVideo = _idx > 0 ? siteVideos[_idx - 1] : null;
   const nextVideo = (_idx >= 0 && _idx < siteVideos.length - 1) ? siteVideos[_idx + 1] : null;
 
-  const breadcrumbSchema = seo.generateStructuredData('breadcrumb', {
-    items: [
-      { name: SITE_NAME, url: SITE_BASE + '/' },
-      { name: video.category || 'Videos', url: video.category ? SITE_BASE + '/category/' + encodeURIComponent(video.category.toLowerCase()) : SITE_BASE },
-      { name: video.title, url: SITE_BASE + '/' + video.id }
-    ]
-  });
-
   // Sanitized H1 (proven on xmelayu: vulgar H1 → deindexation). Full title stays H2.
   const tp = seoL.seoTitlePair(video.external ? (video.title || video.id) : video.id, SITE_NAME);
-  const displayTitle = tp.fullTitle;
+  const displayTitle = buildSeoVideoTitle(video.title || tp.fullTitle, video.category) + ' — ' + SITE_NAME;
   const seoH1 = tp.h1;
   const metaDesc = desc ? desc.replace(/<[^>]+>/g, '').substring(0, 160) : `Watch ${video.title} — latina video on Super X Latina.`;
   const canonicalUrl = SITE_BASE + '/' + video.id;
@@ -1572,6 +1909,7 @@ app.get('/:id', (req, res) => {
     jsonLd: [
       seoL.videoSchema({
         siteUrl: SITE_BASE,
+        siteName: SITE_NAME,
         id: video.id,
         title: displayTitle,
         description: metaDesc,
@@ -1579,7 +1917,8 @@ app.get('/:id', (req, res) => {
         uploaded: video.uploaded,
         duration: video.duration,
         views: video.views,
-        contentUrl: playbackUrl
+        contentUrl: isHotlink ? undefined : playbackUrl,
+        embedUrl: isHotlink ? canonicalUrl : undefined
       }),
       seoL.breadcrumbSchema([
         { name: SITE_NAME, url: SITE_BASE + '/' },
@@ -1604,8 +1943,6 @@ app.get('/:id', (req, res) => {
     nextVideo: nextVideo ? { id: nextVideo.id, title: nextVideo.title, thumbnail: thumbSrc(nextVideo) || ('/thumbnails/' + nextVideo.id + '.jpg') } : null,
     siteName: SITE_NAME,
     siteUrl: SITE_BASE,
-    structuredData: seo.generateStructuredData('video', video),
-    breadcrumbSchema,
     keywords,
     videoDescription: desc,
     likeCount: getLikes(video.id),
@@ -1665,14 +2002,34 @@ setInterval(() => {
   server.listen(PORT, () => {
     const memTotal = (os.totalmem() / 1e9).toFixed(1);
     const memUsed = ((os.totalmem() - os.freemem()) / 1e9).toFixed(1);
+    const localUrl = `http://localhost:${PORT}`;
+    const mode = IS_PROD ? 'PROD' : 'DEV';
+    const categories = healthyCategories();
+    const thumbDir = config.thumbnailDir || config.thumbnailsFolder || path.join(DATA_DIR, 'thumbs');
     console.log(`
-  ╔══════════════════════════════════════════════╗
-  ║   Super X Latina — HD Latina Videos   ║
-  ╠══════════════════════════════════════════════╣
-  ║  ${siteVideos.length} videos  │  Port ${PORT}  │  ${IS_PROD ? 'PROD' : 'DEV'}
-  ║  ${memUsed}/${memTotal} GB RAM  │  ${os.platform()}
-  ╚══════════════════════════════════════════════╝
-  Drop URL lists in: ${IMPORTS_DIR}
+  ╔══════════════════════════════════════════════════════════════╗
+  ║              Super X Latina runtime dashboard                ║
+  ╠══════════════════════════════════════════════════════════════╣
+  ║ Status       ONLINE                                          ║
+  ║ Mode         ${mode.padEnd(5)}  Platform: ${os.platform().padEnd(8)}  Node: ${process.version.padEnd(7)} ║
+  ║ Local URL    ${localUrl.padEnd(46)} ║
+  ║ Public URL   ${SITE_BASE.padEnd(46)} ║
+  ╠══════════════════════════════════════════════════════════════╣
+  ║ Videos       ${String(siteVideos.length).padEnd(6)} External: ${String(externalVideos.length).padEnd(6)} Categories: ${String(categories.length).padEnd(4)} ║
+  ║ Traffic      ${traffic.total} requests since startup (live counters)                 ║
+  ║ Thumbnails   ${String(thumbDir).slice(0, 46).padEnd(46)} ║
+  ║ Previews     ${String(previewReady.size).padEnd(6)} local preview clips available                  ║
+  ║ Memory       ${memUsed}/${memTotal} GB RAM                                      ║
+  ╠══════════════════════════════════════════════════════════════╣
+  ║ Admin        ${(`${localUrl}/admin`).padEnd(46)} ║
+  ║ CDN publish  Feed URLs → Publish CDN URLs                     ║
+  ║ Imports      ${String(IMPORTS_DIR).slice(0, 46).padEnd(46)} ║
+  ╠══════════════════════════════════════════════════════════════╣
+  ║ SEO          ${(`${localUrl}/sitemap.xml`).padEnd(46)} ║
+  ║ Crawlers     ${(`${localUrl}/robots.txt`).padEnd(46)} ║
+  ║ RSS          ${(`${localUrl}/feed.xml`).padEnd(46)} ║
+  ║ Long-tail    ${(`${localUrl}/latina-long-tail`).padEnd(46)} ║
+  ╚══════════════════════════════════════════════════════════════╝
     `);
   });
 })();

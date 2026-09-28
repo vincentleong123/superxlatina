@@ -35,6 +35,27 @@ const NICHE_KEYWORDS = new Set([
   'mfm', 'lesbian', 'tattoo', 'bbw', 'casting', 'hidden cam', 'backyard'
 ]);
 
+// High-intent long-tail pathways for crawlers and topical clustering. These map
+// to the most valuable Latina intent phrases that search engines commonly match.
+const LONG_TAIL_KEYWORDS = [
+  'latina video clips',
+  'latina amateur videos',
+  'latina milf videos',
+  'latina teen videos',
+  'latina pov videos',
+  'latina blowjob clips',
+  'latina threesome videos',
+  'latina creampie videos',
+  'latina anal videos',
+  'latina public videos',
+  'latina lesbian videos',
+  'latina solo videos',
+  'latina homemade videos',
+  'latina college videos',
+  'latina big ass videos',
+  'latina gangbang videos'
+];
+
 // Generic tags that add no internal-link value on a keyword page.
 const LINKAGE_STOPWORDS = new Set([
   'latina', 'xxx', 'sex', 'sexual', 'video', 'videos', 'free', 'hd', '1080p',
@@ -97,9 +118,31 @@ function findRelatedKeywords(keyword, matchedVideos) {
   return scored.slice(0, 12).map(x => x.k);
 }
 
+function buildLongTailPageData(keyword, matchedVideos, siteName, slug = null) {
+  const brand = siteName || 'Super X Latina';
+  const baseKeyword = String(keyword || '').trim().toLowerCase();
+  const count = matchedVideos.length;
+  const title = baseKeyword.includes('latina')
+    ? `${titleCase(baseKeyword)} | ${brand}`
+    : `${titleCase(baseKeyword)} Latina | ${brand}`;
+  const h1 = baseKeyword.includes('latina')
+    ? `${titleCase(baseKeyword)} — Free Latina Videos`
+    : `${titleCase(baseKeyword)} Latina — Free Videos`;
+  const description = `Watch ${count} ${baseKeyword} in HD. Fresh ${baseKeyword} updates, premium clips, and free latina streaming at ${brand}.`;
+  return {
+    slug: slug || baseKeyword.replace(/\s+/g, '-'),
+    title,
+    h1,
+    description,
+    count
+  };
+}
+
 module.exports = {
   SEO_CONTENT_TEMPLATES,
   NICHE_KEYWORDS,
+  LONG_TAIL_KEYWORDS,
   generateKeywordContent,
-  findRelatedKeywords
+  findRelatedKeywords,
+  buildLongTailPageData
 };

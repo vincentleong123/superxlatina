@@ -130,6 +130,8 @@
         <button class="admin-btn danger" id="deleteHostBtn" disabled>🗑 Delete all from this source</button>
         <button class="admin-btn secondary" id="backfillDurBtn" onclick="backfillDurations()">⏱ Re-probe durations</button>
         <button class="admin-btn secondary" id="backfillThumbBtn" onclick="backfillThumbnails()">🖼 Backfill thumbs</button>
+        <label class="sel-hint" style="display:flex;align-items:center;gap:5px"><input type="checkbox" id="seoOverwrite"> overwrite existing descriptions</label>
+        <button class="admin-btn secondary" id="selectedSeoBtn" disabled>🧠 SEO selected</button>
       </div>
       <table class="video-table">
         <thead><tr><th><input type="checkbox" id="checkAll" title="Select all"></th><th>Title</th><th>Category</th><th>Source</th><th>Duration</th><th>Views</th><th>Status</th><th></th></tr></thead>
@@ -170,6 +172,16 @@ https://another-site.com/embed/xyz
         <label class="admin-btn secondary" style="cursor:pointer">📎 Upload file<input type="file" id="feedFile" accept=".txt,.json,text/plain,application/json" style="display:none"></label>
       </div>
       <pre id="feedReport" style="display:none;background:#1d160e;border-radius:10px;padding:14px;margin-top:14px;font-size:12px;color:#d6c9b8;line-height:1.6;white-space:pre-wrap"></pre>
+    </div>
+    <div class="nlp-card" style="max-width:760px;margin-top:18px">
+      <h3>🔗 Publish CDN URLs to Super X Latina</h3>
+      <p>Paste WPS CDN page URLs or signed player URLs, one per line. For example, <code>https://cdn.superxlatina.com/your-video</code>. Use <code>Title | URL</code> when you want a custom title. Page URLs are resolved automatically.</p>
+      <textarea id="cdnImportInput" rows="6" style="width:100%;padding:10px 14px;border:1px solid #3a2d1c;border-radius:8px;font-size:13px;font-family:Nunito,sans-serif;box-sizing:border-box;outline:none" placeholder="Latina clip 1 | https://cdn.superxlatina.com/t/signed-token
+https://cdn.superxlatina.com/t/another-token"></textarea>
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+        <button class="admin-btn primary" id="cdnImportBtn" onclick="publishCdnUrls()">🔗 Publish CDN URLs</button>
+      </div>
+      <pre id="cdnImportReport" style="display:none;background:#1d160e;border-radius:10px;padding:14px;margin-top:14px;font-size:12px;color:#d6c9b8;line-height:1.6;white-space:pre-wrap"></pre>
     </div>
   </div>
 
@@ -218,7 +230,7 @@ https://another-site.com/embed/xyz
         <div class="nlp-stat"><div class="num">🧠</div><div class="label">NLP Active</div></div>
       </div>
       <button class="admin-btn primary" onclick="rewriteAllDescriptions()">🔄 Rewrite All Descriptions with NLP</button>
-      <p style="margin-top:10px;font-size:12px;color:#9ca3af">Regenerates every video description using NLP — title extraction, LSI keywords, synonym rotation, brand voice injection. Pure JavaScript, zero API calls.</p>
+      <p style="margin-top:10px;font-size:12px;color:#9ca3af">For a controlled rollout, select specific videos in the Videos tab and click <strong>SEO selected</strong>. Existing editorial descriptions are protected unless overwrite is checked.</p>
     </div>
     <div class="nlp-card" style="margin-top:16px">
       <h3>📝 How It Works</h3>
@@ -458,6 +470,35 @@ function feedImport(textOverride) {
   step();
 }
 
+function publishCdnUrls() {
+  const input = document.getElementById('cdnImportInput');
+  const report = document.getElementById('cdnImportReport');
+  const btn = document.getElementById('cdnImportBtn');
+  const text = input.value.trim();
+  if (!text) { showNlpToast('Paste CDN URLs first'); return; }
+  btn.disabled = true;
+  btn.textContent = '⏳ Publishing...';
+  report.style.display = 'block';
+  report.textContent = 'Publishing CDN URLs...';
+  fetch('/api/external/import-cdn-urls', {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: text
+  }).then(r => r.json()).then(d => {
+    btn.disabled = false;
+    btn.textContent = '🔗 Publish CDN URLs';
+    report.textContent = 'added: ' + (d.added || 0) + '\nskipped: ' + (d.skipped || 0) + '\nerrors: ' + (d.errors || []).length +
+      ((d.errors || []).length ? '\n' + d.errors.map(e => 'x line ' + e.line + ' — ' + e.error).join('\n') : '');
+    if (d.ok) { showNlpToast('✅ Published ' + (d.added || 0) + ' CDN URL' + (d.added === 1 ? '' : 's')); if (d.added) setTimeout(() => location.reload(), 1200); }
+    else showNlpToast('❌ ' + (d.error || 'Publish failed'));
+  }).catch(() => {
+    btn.disabled = false;
+    btn.textContent = '🔗 Publish CDN URLs';
+    report.textContent = 'Network error';
+    showNlpToast('❌ Network error');
+  });
+}
+
 document.getElementById('feedFile')?.addEventListener('change', function() {
   const f = this.files[0];
   if (!f) return;
@@ -530,6 +571,7 @@ function updateSel() {
   const n = selectedRows().length;
   document.getElementById('selCount').textContent = n;
   document.getElementById('bulkDeleteBtn').disabled = n === 0;
+  document.getElementById('selectedSeoBtn').disabled = n === 0;
   document.getElementById('checkAll').checked = vis.length > 0 && n === vis.length;
   selCheckboxes().forEach(c => {
     if (c.checked) c.closest('tr')?.classList.add('checked');
@@ -537,6 +579,31 @@ function updateSel() {
   });
 }
 
+
+document.getElementById('selectedSeoBtn')?.addEventListener('click', function() {
+  const ids = selectedRows().map(c => c.value);
+  if (!ids.length) return;
+  const overwrite = document.getElementById('seoOverwrite').checked;
+  if (overwrite && !confirm('Overwrite descriptions for ' + ids.length + ' selected video(s)?')) return;
+  const btn = this;
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '🧠 Generating...';
+  fetch('/api/rewrite-descriptions/selected', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids, overwrite })
+  }).then(r => r.json()).then(d => {
+    btn.textContent = original;
+    updateSel();
+    if (!d.ok) return showNlpToast('❌ ' + (d.error || 'SEO update failed'));
+    showNlpToast('✅ Updated ' + d.updated + ', skipped ' + d.skipped + ', missing ' + d.missing);
+  }).catch(() => {
+    btn.textContent = original;
+    updateSel();
+    showNlpToast('❌ Network error');
+  });
+});
 document.getElementById('checkAll')?.addEventListener('change', function() {
   visibleCheckboxes().forEach(c => { c.checked = this.checked; });
   updateSel();

@@ -4,10 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="rating" content="RTA-5042-1996-1400-1577-RTA" />
-<%- include('partials/analytics') %><%- seoMeta %>
-<link rel="stylesheet" href="/css/style.css?v=19">
-<script src="/js/hls.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<%- include('partials/analytics') %><%- include('partials/ad-boot') %><%- seoMeta %>
+<link rel="stylesheet" href="/css/style.css?v=20">
+<link rel="stylesheet" href="/css/video-upgrades.css?v=1">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap"></noscript>
 <style>
 .seo-poster{width:160px;height:90px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.08);display:block;margin:0 0 12px}
 .video-card .thumb{position:relative;overflow:hidden}
@@ -44,17 +46,18 @@
   <a href="/" class="back-link">&#x2190; Back to all videos</a>
 
   <div class="player-wrapper">
+    <%- include('video-enhance') %>
     <!-- WPS Transformer player (ported into Super X Latina) — custom controls,
          scrub previews, speed/quality switching, silent autoplay + perceived-speed UI -->
     <div class="wps-player"
          data-src="<%= playbackUrl || video.video || ('/videos/' + video.id + '.mp4') %>"
          data-poster="<%= videoThumb || video.thumbnail || ('/thumbnails/' + video.id + '.jpg') %>"
          data-autoplay-next="<%= nextVideo ? '1' : '0' %>"
-         data-preroll="0"
-         data-preview="<%= videoPreview || video.preview || '' %>"
+data-preroll="0"
+         data-scrub-src="<%= playbackUrl || ('/videos/' + video.id + '.mp4') %>"
          data-next="<%= nextVideo ? '/' + nextVideo.id : '' %>"
          data-next-title="<%= nextVideo ? nextVideo.title : '' %>">
-      <video id="wpsVideo" playsinline autoplay muted preload="metadata" poster="<%= videoThumb || video.thumbnail || ('/thumbnails/' + video.id + '.jpg') %>"></video>
+      <video id="wpsVideo" data-vast data-vid="<%= video.id %>" playsinline autoplay muted preload="metadata" poster="<%= videoThumb || video.thumbnail || ('/thumbnails/' + video.id + '.jpg') %>"></video>
       <div class="wps-poster wps-skeleton" style="background-image:url('<%= videoThumb || video.thumbnail || ('/thumbnails/' + video.id + '.jpg') %>')"></div>
       <div class="wps-center"><button class="wps-big-play" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button></div>
       <div class="wps-loader"><div class="wps-loader-ring"></div><span class="wps-loader-pct"></span></div>
@@ -131,6 +134,8 @@
     <p style="margin-top:12px;font-size:13px;color:#9ca3af"> Super X Latina — Premium HD latina video collection. Browse more content!</p>
   </div>
 
+  <%- include('ad-native') %>
+
   <% if (keywords && keywords.length) { %>
     <div class="tags">
       <% keywords.forEach(function(k) { %>
@@ -160,6 +165,8 @@
       <% }); %>
     </div>
   </section>
+
+  <%- include('ad-sticky') %>
 </main>
 
 <div class="share-toast" id="shareToast">Link copied to clipboard!</div>
@@ -298,7 +305,7 @@ function showToast(msg) {
   }
 
   if (video) {
-    video.addEventListener('ended', function(){ if (video.getAttribute('data-intro') === '1') return; startAutoNext(); });
+    video.addEventListener('ended', function(){ startAutoNext(); });
     video.addEventListener('play', clearAutoNext);
     video.addEventListener('playing', clearAutoNext);
     video.addEventListener('seeked', function() {
@@ -310,9 +317,12 @@ function showToast(msg) {
 })();
 </script>
 
+<script>window.__CARD_PREVIEW_VIDEOS = <%- JSON.stringify(relatedVideos || []) %>;</script>
+<script src="/js/card-previews.js?v=2"></script>
 <script>
-/* Hover video preview on related cards — same engine & style as the home gallery */
+/* Legacy fallback retained for cached pages; shared controller handles current pages. */
 (function(){
+  if (window.CardPreviews) return;
   var videoById = {};
     <% relatedVideos.forEach(function(v){ %>videoById[<%- JSON.stringify(v.id) %>] = <%- JSON.stringify({ id: v.id, video: v.video, size: v.size, dur: v.dur, pv: v.pv, preview: v.preview }) %>;
 <% }); %>
@@ -576,7 +586,11 @@ function showToast(msg) {
 })();
 </script>
 
+<script src="/js/hls.min.js"></script>
 <script src="/js/wps-player.js?v=7"></script>
+<script src="/js/vast.js?v=1"></script>
+<script src="/js/video-scrubber.js?v=1"></script>
+<script src="/js/player-loading.js?v=1"></script>
 
 <script>
 // ─── MOBILE NAV ───

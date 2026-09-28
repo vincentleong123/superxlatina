@@ -15,7 +15,7 @@
 
   var SRC = root.getAttribute('data-src') || '';
   var POSTER = root.getAttribute('data-poster') || '';
-  var PREVIEW_SRC = root.getAttribute('data-preview') || '';
+  var SCRUB_SRC = root.getAttribute('data-scrub-src') || '';
   var IS_HLS = /\.m3u8(\?|$|#)/i.test(SRC);
 
   // element refs
@@ -46,8 +46,7 @@
     controlsVisible: true, hideTimer: null,
     scrubbing: false, dragging: false, wasPaused: true,
     muted: false, volume: 1,
-    retries: 0, MAX_RETRIES: 2,
-    introMode: false, introTimer: null
+    retries: 0, MAX_RETRIES: 2
   };
 
   function fmt(sec) {
@@ -127,10 +126,14 @@
       video.load();
       if (autoplay) { var p2 = video.play(); if (p2 && p2.catch) p2.catch(function () {}); }
     }
-    // scrub source: prefer the tiny downloaded clip (never double-fetch hotlink)
+    // Use the full local file for accurate timeline frames. A short preview
+    // clip cannot represent arbitrary positions in the full video.
     if (previewVideo) {
       previewVideo.removeAttribute('src');
-      if (PREVIEW_SRC) { previewVideo.setAttribute('src', PREVIEW_SRC); previewVideo.load(); }
+      if (SCRUB_SRC && !/\.m3u8(\?|$|#)/i.test(SCRUB_SRC)) {
+        previewVideo.setAttribute('src', SCRUB_SRC);
+        previewVideo.load();
+      }
     }
     if (previewImg && POSTER) previewImg.style.backgroundImage = 'url(' + POSTER + ')';
   }
@@ -148,29 +151,6 @@
       loadMedia(SRC, true);
       if (loaderEl) setTimeout(function () { loaderEl.classList.remove('show'); }, 5000);
     }, 700);
-  }
-
-  // ── perceived speed: instant-motion intro clip, then real stream ──
-  function introEnd() {
-    if (!state.introMode) return;
-    state.introMode = false;
-    if (state.introTimer) { clearTimeout(state.introTimer); state.introTimer = null; }
-    video.removeAttribute('data-intro');
-    video.removeAttribute('src');
-    video.load();
-    loadMedia(SRC, true);
-  }
-
-  function introStart() {
-    if (!PREVIEW_SRC || IS_HLS) { loadMedia(SRC, true); return; }
-    state.introMode = true;
-    video.setAttribute('data-intro', '1');
-    video.setAttribute('src', PREVIEW_SRC);
-    video.load();
-    var p = video.play();
-    if (p && p.catch) p.catch(function () {});
-    video.addEventListener('ended', introEnd, { once: true });
-    state.introTimer = setTimeout(introEnd, 7000);
   }
 
   // ── controls visibility ──
@@ -267,7 +247,7 @@
     if (timeEl) timeEl.textContent = fmt(t) + ' / ' + fmt(d);
     if (previewTime) previewTime.textContent = fmt(t);
     positionBubble(ratio);
-    if (previewVideo && PREVIEW_SRC) {
+    if (previewVideo && SCRUB_SRC) {
       try {
         if (previewVideo.readyState >= 1) previewVideo.currentTime = t;
       } catch (e) {}
@@ -284,7 +264,7 @@
     if (previewBubble && d) previewBubble.classList.add('show');
     if (state.scrubbing) return;
     // light hover: poster or scrub-video frame
-    if (previewVideo && PREVIEW_SRC && previewVideo.readyState >= 1) {
+    if (previewVideo && SCRUB_SRC && previewVideo.readyState >= 1) {
       try { previewVideo.currentTime = ratio * d; } catch (e2) {}
     }
   }
@@ -540,8 +520,9 @@
     // templates mark the <video> autoplay+muted; browsers enforce muted autoplay.
     // If it's blocked, keep it simple: show controls, try once on gesture.
   }
-  // start intro (instant motion via preview clip) then real stream
-  introStart();
+  // Start the actual stream immediately. Preview clips remain available for
+  // deliberate timeline scrubbing, but never play before the main video.
+  loadMedia(SRC, true);
 
   // kick progress updates even before media loads
   setInterval(updateLoaderPct, 500);

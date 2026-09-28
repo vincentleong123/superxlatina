@@ -4,18 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="rating" content="RTA-5042-1996-1400-1577-RTA" />
-<%- include('partials/analytics') %><%- seoMeta %>
-<link rel="stylesheet" href="/css/style.css?v=17">
+<%- include('partials/analytics') %><%- include('partials/ad-boot') %><%- seoMeta %>
+<link rel="stylesheet" href="/css/style.css?v=18">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap"></noscript>
 <style>
 /* ─── INLINE HERO & CARDS (dark amber) ─── */
-.arnab-hero{text-align:center;padding:56px 0 60px;position:relative;overflow:hidden;margin:0 0 20px;background:linear-gradient(160deg,#120d07 0%,#1a120a 35%,#241708 70%,#2a1c0c 100%);border-bottom:1px solid #3a2d1c}
-.arnab-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(760px 300px at 50% 118%,rgba(245,158,11,.18),transparent 70%);pointer-events:none}
+.arnab-hero{text-align:center;padding:56px 0 60px;position:relative;overflow:hidden;margin:0 0 20px;background:linear-gradient(135deg,#0b0705 0%,#1a110d 18%,#2a160d 42%,#120b08 72%,#120b08 100%);border-bottom:1px solid rgba(245,158,11,.35);box-shadow:inset 0 0 80px rgba(245,158,11,.06)}
+.arnab-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 15% 20%,rgba(249,115,22,.35),transparent 22%),radial-gradient(circle at 80% 15%,rgba(236,72,153,.18),transparent 20%),radial-gradient(circle at 55% 100%,rgba(245,158,11,.28),transparent 25%);pointer-events:none}
+.arnab-hero::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,.04),transparent 34%,rgba(255,255,255,.02) 70%,transparent);pointer-events:none}
 .arnab-hero-media{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.arnab-hero-media-veil{position:absolute;inset:0;background:radial-gradient(880px 460px at 10% 92%,rgba(245,158,11,.16),transparent 70%),linear-gradient(105deg,rgba(18,13,7,.97) 0%,rgba(22,16,9,.92) 36%,rgba(22,16,9,.3) 60%,rgba(18,13,7,.8) 100%)}
-.arnab-collage{position:relative;height:clamp(360px,44vw,540px);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);gap:12px;transform:rotate(1.2deg)}
-.collage-tile{width:100%;height:100%;object-fit:cover;border-radius:16px;border:1px solid rgba(245,158,11,.42);box-shadow:0 20px 52px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.45);animation:collageFloat 16s ease-in-out infinite alternate}
+.arnab-hero-media-veil{position:absolute;inset:0;background:radial-gradient(880px 460px at 10% 92%,rgba(245,158,11,.22),transparent 70%),linear-gradient(105deg,rgba(18,13,7,.96) 0%,rgba(22,16,9,.9) 32%,rgba(22,16,9,.4) 58%,rgba(18,13,7,.9) 100%)}
+.arnab-collage{position:relative;height:clamp(360px,44vw,540px);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);gap:12px;transform:rotate(1.2deg);filter:saturate(1.15) contrast(1.08)}
+.collage-tile{width:100%;height:100%;object-fit:cover;border-radius:18px;border:1px solid rgba(245,158,11,.42);box-shadow:0 24px 58px rgba(0,0,0,.62),inset 0 0 0 1px rgba(0,0,0,.45);animation:collageFloat 16s ease-in-out infinite alternate}
 .collage-1{grid-column:1/3;grid-row:1/3}
 .collage-2{grid-column:3;grid-row:1/3}
 .collage-3{grid-column:1;grid-row:3/5;animation-delay:-6s}
@@ -28,19 +31,27 @@
 .arnab-hero-inner{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 22px;text-align:center}
 .arnab-hero--home .arnab-hero-inner{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);gap:clamp(24px,5vw,64px);align-items:center;text-align:left}
 .arnab-hero-copy{min-width:0}
-.arnab-hero-badge{display:inline-block;padding:5px 20px;border-radius:30px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1a120a;box-shadow:0 2px 14px rgba(245,158,11,.45)}
-.arnab-hero h1{font-size:clamp(30px,5vw,52px);font-weight:900;line-height:1.08;margin-bottom:12px;color:#fbbf24;text-shadow:0 0 30px rgba(245,158,11,.35)}.arnab-hero h1 span{background:linear-gradient(135deg,#f59e0b,#fcd34d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.arnab-hero-sub{font-size:clamp(15px,2vw,20px);color:#d6c9b8;margin-bottom:4px;font-weight:500;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.5}
-.arnab-hero--home .arnab-hero-sub{margin-left:0;max-width:540px}
-.arnab-hero-stats{display:flex;justify-content:center;gap:10px 24px;flex-wrap:wrap;margin:16px 0 16px;font-size:14px;color:#fbbf24;font-weight:600}
+.arnab-hero-badge{display:inline-block;padding:6px 20px;border-radius:30px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;background:linear-gradient(135deg,#f59e0b,#ffe082);color:#1a120a;box-shadow:0 10px 28px rgba(245,158,11,.38), inset 0 1px 0 rgba(255,255,255,.35)}
+.hero-strip{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
+.hero-strip .hero-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:rgba(17,12,8,.52);border:1px solid rgba(245,158,11,.28);color:#f9d88d;backdrop-filter:blur(8px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.arnab-hero h1{font-size:clamp(34px,5vw,60px);font-weight:900;line-height:0.96;margin-bottom:12px;color:#fef3c7;text-shadow:0 0 28px rgba(245,158,11,.3), 0 10px 30px rgba(0,0,0,.55)}.arnab-hero h1 span{background:linear-gradient(135deg,#fbbf24,#f97316 45%,#fef3c7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 18px rgba(251,191,36,.33))}
+.arnab-hero-sub{font-size:clamp(16px,2vw,21px);color:#f1e3cf;margin-bottom:4px;font-weight:600;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.5}
+.arnab-hero--home .arnab-hero-sub{margin-left:0;max-width:560px}
+.arnab-hero-stats{display:flex;justify-content:center;gap:10px 24px;flex-wrap:wrap;margin:18px 0 18px;font-size:14px;color:#fbbf24;font-weight:700}
 .arnab-hero--home .arnab-hero-stats{justify-content:flex-start}
-.arnab-hero-stats span{background:rgba(245,158,11,.12);backdrop-filter:blur(6px);padding:5px 16px;border-radius:20px;border:1px solid rgba(245,158,11,.25)}
+.arnab-hero-stats span{background:rgba(245,158,11,.09);backdrop-filter:blur(6px);padding:6px 16px;border-radius:20px;border:1px solid rgba(245,158,11,.2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
 .arnab-keywords{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 0 14px}
 .arnab-hero--home .arnab-keywords{justify-content:flex-start}
-.arnab-keyword{display:inline-flex;align-items:center;gap:4px;padding:5px 14px;border-radius:999px;font-size:12px;font-weight:700;text-decoration:none;transition:all .2s;background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}.arnab-keyword:hover{background:rgba(245,158,11,.22);border-color:#f59e0b;transform:translateY(-1px)}
+.arnab-keyword{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:800;text-decoration:none;transition:all .2s;background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25);box-shadow:0 8px 18px rgba(0,0,0,.12)}.arnab-keyword:hover{background:rgba(245,158,11,.22);border-color:#f59e0b;transform:translateY(-1px)}
 .arnab-keyword .emoji{font-size:14px}
-.arnab-cta{display:inline-flex;align-items:center;gap:10px;padding:13px 32px;border-radius:50px;font-size:15px;font-weight:800;text-decoration:none;border:none;cursor:pointer;transition:all .3s;margin:3px;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1a120a;box-shadow:0 4px 20px rgba(245,158,11,.4)}.arnab-cta:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 8px 30px rgba(245,158,11,.55)}.arnab-cta-alt{background:#2a1f12;color:#fbbf24;box-shadow:0 2px 12px rgba(0,0,0,.4)}.arnab-cta-alt:hover{background:#3a2d1c;box-shadow:0 4px 20px rgba(0,0,0,.5)}
-
+.arnab-cta{display:inline-flex;align-items:center;gap:10px;padding:14px 30px;border-radius:999px;font-size:15px;font-weight:900;text-decoration:none;border:none;cursor:pointer;transition:all .25s;margin:3px;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1a120a;box-shadow:0 18px 28px rgba(245,158,11,.28), inset 0 1px 0 rgba(255,255,255,.35)}.arnab-cta:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 22px 36px rgba(245,158,11,.36), inset 0 1px 0 rgba(255,255,255,.35)}.arnab-cta-alt{background:rgba(42,31,18,.8);color:#fbbf24;box-shadow:0 10px 18px rgba(0,0,0,.22);border:1px solid rgba(245,158,11,.2)}.arnab-cta-alt:hover{background:#3a2d1c;box-shadow:0 14px 20px rgba(0,0,0,.25)}
+.profit-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0 28px}
+.profit-card{background:linear-gradient(180deg,rgba(32,23,15,.96),rgba(20,14,10,.92));border:1px solid rgba(245,158,11,.18);border-radius:16px;padding:18px;box-shadow:0 18px 30px rgba(0,0,0,.18)}
+.profit-card .label{display:inline-block;padding:5px 10px;border-radius:999px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:#fbbf24;margin-bottom:12px}
+.profit-card h3{margin:0 0 10px;font-size:17px;color:#fef3c7}
+.profit-card p{margin:0 0 14px;color:#d9cbb5;font-size:13px;line-height:1.5}
+.profit-card a{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:10px;text-decoration:none;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1a120a;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+@media(max-width:768px){.profit-strip{grid-template-columns:1fr}}
 /* Tablet: stack copy above the collage, keep the wall centred */
 @media(max-width:900px){
   .arnab-hero--home .arnab-hero-inner{grid-template-columns:1fr;text-align:center}
@@ -161,6 +172,19 @@
 .list-card .thumb video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:3;pointer-events:none}
 .feat-car-card .feat-car-thumb video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:3;pointer-events:none}
 
+/* Thumb shimmer — never a flat blank while a lazy image / preview loads.
+   The img covers the gradient as soon as it paints. */
+.thumb,.feat-car-thumb{
+  background:linear-gradient(90deg,#22190f 25%,#3a2d1c 50%,#22190f 75%);
+  background-size:200% 100%;
+  animation:skeleton-load 1.4s ease infinite;
+}
+.thumb img,.feat-car-thumb img{position:relative;background:#22190f}
+
+/* Mid-page hero wrapper — sits inside the feed after the first section */
+.mid-hero{margin:0 0 28px;padding:0}
+.mid-hero .arnab-hero{margin:0 0 14px}
+
 /* Ad row */
 
 /* Skeleton */
@@ -255,46 +279,7 @@
   </div>
 </header>
 
-<% if (!currentCategory) { %>
-<!-- ─── HERO — Cinematic Latina collage ─── -->
-<div class="arnab-hero arnab-hero--home">
-  <div class="arnab-hero-media" aria-hidden="true">
-    <div class="arnab-hero-media-veil"></div>
-    <div class="collage-mark">SUPER X</div>
-  </div>
-  <div class="arnab-hero-inner">
-    <div class="arnab-hero-copy">
-      <div class="arnab-hero-badge">&#x1F525; 100% FREE &middot; NO SIGN-UP &middot; UPDATED DAILY</div>
-      <h1>Every <span>Latina</span> Fantasy, In HD</h1>
-      <div class="arnab-hero-sub">Super X Latina &mdash; hand-picked latina, amateur &amp; uncensored clips, free to stream in 1080p. No account, no paywall &mdash; ever.</div>
-      <div class="arnab-hero-stats">
-        <span>&#x1F3AC; <%= totalVideos %> latina videos</span>
-        <span>&#x26A1; Instant streaming</span>
-        <span>&#x1F525; Zero paywall</span>
-      </div>
-      <div class="arnab-keywords" id="heroKeywords">
-        <% if (categories && categories.length) { %>
-          <% categories.slice(0, 7).forEach(function(c) { %>
-            <a href="/category/<%= encodeURIComponent(c.toLowerCase()) %>" class="arnab-keyword"><span class="emoji">&#x1F525;</span> <%= c %></a>
-          <% }); %>
-        <% } %>
-      </div>
-      <div>
-        <a href="#videoFeed" class="arnab-cta" onclick="event.preventDefault();document.getElementById('videoFeed').scrollIntoView({behavior:'smooth'})">&#x25B6; Watch All Videos</a>
-        <a href="/about" class="arnab-cta arnab-cta-alt">&#x25CE; About the Vault</a>
-      </div>
-    </div>
-    <% if (typeof heroImages !== 'undefined' && heroImages.length) { %>
-    <div class="arnab-collage">
-      <% heroImages.forEach(function(img, i) { %>
-      <img src="<%= img.src || img %>" alt="<%= img.alt || 'Super X Latina — free HD latina videos' %>" class="collage-tile collage-<%= i + 1 %>" loading="<%= i === 0 ? 'eager' : 'lazy' %>" <%= i === 0 ? 'fetchpriority="high"' : '' %> decoding="async" onerror="this.style.display='none'">
-      <% }); %>
-      <div class="collage-brand" aria-hidden="true"><span class="collage-brand-mark">SX</span><span class="collage-brand-txt">Latina Vault</span></div>
-    </div>
-    <% } %>
-  </div>
-</div>
-<% } else { %>
+<% if (currentCategory) { %>
 <!-- ─── CATEGORY HERO ─── -->
 <div class="arnab-hero">
   <div class="arnab-hero-inner">
@@ -309,6 +294,7 @@
 <% } %>
 
 <main class="container">
+  <%- include('ad-native') %>
   <!-- ─── FEATURED CAROUSEL ─── -->
   <% if (featured && featured.length >= 3) { %>
   <div class="feat-car-section" id="featCarSection">
@@ -366,7 +352,75 @@
       </div>
     </div>
     <% } %>
+    <% if (!currentCategory) { %>
+    <div class="mid-hero" id="midHero">
+      <div class="arnab-hero arnab-hero--home">
+        <div class="arnab-hero-media" aria-hidden="true">
+          <div class="arnab-hero-media-veil"></div>
+          <div class="collage-mark">SUPER X</div>
+        </div>
+        <div class="arnab-hero-inner">
+          <div class="arnab-hero-copy">
+            <div class="arnab-hero-badge">&#x1F525; 100% FREE &middot; NO SIGN-UP &middot; UPDATED DAILY</div>
+            <h1>Free <span>Latina Video Clips</span> That Hit Hard</h1>
+            <div class="hero-strip">
+              <span class="hero-pill">🔥 HD heat</span>
+              <span class="hero-pill">⚡ instant access</span>
+              <span class="hero-pill">✨ fresh every day</span>
+            </div>
+            <div class="arnab-hero-sub">Super X Latina brings the boldest latina scenes, premium amateur clips, and uncensored favorites in crystal-clear HD — built to feel explosive, effortless, and impossible to ignore.</div>
+            <div class="arnab-hero-stats">
+              <span>&#x1F3AC; <%= totalVideos %> latina video clips</span>
+              <span>&#x26A1; Instant HD streaming</span>
+              <span>&#x1F525; Zero paywall</span>
+            </div>
+            <div class="arnab-keywords" id="heroKeywords">
+              <% if (categories && categories.length) { %>
+                <% categories.slice(0, 7).forEach(function(c) { %>
+                  <a href="/category/<%= encodeURIComponent(c.toLowerCase()) %>" class="arnab-keyword"><span class="emoji">&#x1F525;</span> <%= c %></a>
+                <% }); %>
+              <% } %>
+            </div>
+            <div>
+              <a href="#videoFeed" class="arnab-cta" onclick="event.preventDefault();var g=document.querySelector('#videoFeed .feed-section, #videoFeed .carousel-section');if(g)g.scrollIntoView({behavior:'smooth'})">&#x25B6; Watch All Videos</a>
+              <a href="/about" class="arnab-cta arnab-cta-alt">&#x25CE; Partner With Us</a>
+            </div>
+          </div>
+          <% if (typeof heroImages !== 'undefined' && heroImages.length) { %>
+          <div class="arnab-collage">
+            <% heroImages.forEach(function(img, i) { %>
+            <img src="<%= img.src || img %>" alt="<%= img.alt || 'Super X Latina — free HD latina videos' %>" class="collage-tile collage-<%= i + 1 %>" loading="<%= i === 0 ? 'eager' : 'lazy' %>" <%= i === 0 ? 'fetchpriority="high"' : '' %> decoding="async" onerror="this.style.display='none'">
+            <% }); %>
+            <div class="collage-brand" aria-hidden="true"><span class="collage-brand-mark">SX</span><span class="collage-brand-txt">Latina Vault</span></div>
+          </div>
+          <% } %>
+        </div>
+      </div>
+      <div class="profit-strip">
+        <div class="profit-card">
+          <div class="label">Sponsor</div>
+          <h3>Brand placement</h3>
+          <p>Reach highly motivated viewers in premium category placements and homepage sponsorship slots.</p>
+          <a href="/contact">Book a slot</a>
+        </div>
+        <div class="profit-card">
+          <div class="label">Partner</div>
+          <h3>Network expansion</h3>
+          <p>Grow your audience through cross-promotion with our curated latina and niche traffic channels.</p>
+          <a href="/about">Explore deals</a>
+        </div>
+        <div class="profit-card">
+          <div class="label">Content</div>
+          <h3>Submit your library</h3>
+          <p>Turn your catalog into daily exposure with a focused premium audience ready to convert.</p>
+          <a href="/contact">Submit now</a>
+        </div>
+      </div>
+    </div>
+    <% } %>
   </div>
+
+  <%- include('ad-sticky') %>
 
   <div class="no-results" id="noResults" style="display:none">
     <div class="no-icon">&#x1F50D;</div>
@@ -377,9 +431,12 @@
   <!-- ─── SEO CONTENT (NLP-generated) ─── -->
   <% if (!currentCategory) { %>
   <div class="seo-content">
-    <h3>&#x1F525; <%- pageSEOTitle || 'Super X Latina — Watch Free HD Latina Online' %></h3>
+    <h2>&#x1F525; <%- pageSEOTitle || 'Super X Latina — Watch Free HD Latina Online' %></h2>
     <p><%- pageSEOText || 'Super X Latina streams the best HD latina and latina videos. New content added daily — fast streaming for all viewers.' %></p>
+    <p>Explore focused collections for <strong>latina video clips</strong>, amateur latina videos, homemade Latina scenes, POV videos, and category-based HD streaming. Each collection is organized for faster browsing and regular updates.</p>
     <div class="seo-links">
+      <a href="/latina-video-clips">Latina Video Clips</a>
+      <a href="/latina-long-tail">Latina Long-Tail Collections</a>
       <a href="https://xmelayu.site">xMelayu — Southeast Asian Amateur Videos</a>
       <a href="https://superxhentai.com">Super X Hentai — HD Hentai Videos</a>
       <% if (categories && categories.length) { %>
@@ -438,6 +495,9 @@
 
 <div class="toast" id="toast"></div>
 
+<script>window.__CARD_PREVIEW_VIDEOS = <%- JSON.stringify(videos || []) %>;</script>
+<script src="/js/card-previews.js?v=2"></script>
+
 <script>
 // ─── STATE ───
 const state = {
@@ -448,7 +508,7 @@ const state = {
 };
 
 const featuredVideos = <%- JSON.stringify(featured || []) %>;
-const allVideos = <%- JSON.stringify(videos || []) %>;
+const allVideos = window.__CARD_PREVIEW_VIDEOS || [];
 var currentCat = '<%- currentCategory || "" %>';
 
 // ─── SHUFFLE ───
@@ -532,7 +592,7 @@ const SECTION_TITLE_POOL = {
 };
 function randomTitle(type) {
   const pool = SECTION_TITLE_POOL[type] || ['Latina Videos'];
-  return pool[Math.floor(Math.random() * pool.length)];
+  return pool[0];
 }
 
 // ─── CREATE SECTION ───
@@ -579,7 +639,7 @@ const LAYOUT_PATTERNS = [
 // ─── BUILD FEED ───
 function buildFeed(videos) {
   if (!videos || !videos.length) return '';
-  const shuffled = shuffle([...videos]);
+  const shuffled = [...videos];
   const avgPerSection = 12;
   const totalSections = Math.ceil(shuffled.length / avgPerSection);
   let html = '';
@@ -604,6 +664,7 @@ function buildFeed(videos) {
 }
 
 // ─── RENDER ───
+const midHeroHtml = (document.getElementById('midHero') || {}).outerHTML || '';
 function render(videos) {
   const feed = document.getElementById('videoFeed');
   if (!feed) return;
@@ -612,7 +673,7 @@ function render(videos) {
   feed.innerHTML = '<div class="skeleton-feed"><div class="s-card"></div><div class="s-card"></div><div class="s-card"></div><div class="s-card"></div><div class="s-card"></div><div class="s-card"></div></div>';
 
   requestAnimationFrame(() => {
-    feed.innerHTML = buildFeed(videos);
+    feed.innerHTML = buildFeed(videos) + (midHeroHtml || '');
     attachPreviews();
   });
 }
@@ -801,6 +862,7 @@ const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) >
 let touchPreviewObserver = null;
 
 function attachPreviews() {
+  if (window.CardPreviews) { window.CardPreviews.refresh(); return; }
   const feed = document.getElementById('videoFeed');
   if (!feed) return;
   initPrefetchObserver(feed);
